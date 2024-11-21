@@ -15,6 +15,27 @@ const saveUsers = async (users) => {
     await fs.writeFile(filePath, JSON.stringify(users, null, 2), 'utf-8');
 };
 
+// 사용자 삭제
+const deleteUserById = async (userId) => {
+    try {
+        const users = await getAllUsers();
+
+        // `userId`와 일치하는 사용자 필터링하여 제거
+        const filteredUsers = users.filter(user => user.userId !== parseInt(userId, 10));
+
+        if (filteredUsers.length === users.length) {
+            throw new Error(`User with ID ${userId} not found`);
+        }
+
+        // 변경된 userId.json 저장
+        await saveUsers(filteredUsers);
+        console.log(`User with ID ${userId} has been deleted.`);
+    } catch (error) {
+        console.error(`Error deleting user: ${error.message}`);
+        throw error;
+    }
+};
+
 // 특정 사용자 정보 조회
 const getUserById = async (userId) => {
     try {
@@ -29,4 +50,4 @@ const getUserById = async (userId) => {
     }
 };
 
-module.exports = { getAllUsers, saveUsers, getUserById };
+module.exports = { getAllUsers, saveUsers, getUserById, deleteUserById };
