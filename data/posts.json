@@ -1,0 +1,24 @@
+[
+  {
+    "postId": 1,
+    "author": "1",
+    "title": "첫 번째 게시물입니다.",
+    "content": "postman으로 확인해보려고 합니다.",
+    "postImage": null,
+    "postDate": "2024-11-23T16:56:54.845Z",
+    "like": 0,
+    "view": 0,
+    "commentsCount": 0
+  },
+  {
+    "postId": 2,
+    "author": 1,
+    "title": "두 번째 게시글 예시입니다.",
+    "content": "포스트맨 아니고 페이지에서 작성중이며 저장이 잘되면 좋겠어요ㅠㅠ",
+    "postImage": null,
+    "postDate": "2024-11-23T18:10:42.523Z",
+    "like": 0,
+    "view": 0,
+    "commentsCount": 0
+  }
+]
