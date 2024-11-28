@@ -23,7 +23,6 @@ app.use(
     })
 );
 
-
 app.use((req, res, next) => {
     console.log(`Request URL: ${req.url}, Method: ${req.method}`);
     next();
@@ -39,4 +38,3 @@ app.use('/images', express.static(path.join(__dirname, '../2-siena-eom-community
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
-

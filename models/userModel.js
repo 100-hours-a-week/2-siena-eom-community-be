@@ -24,12 +24,12 @@ const deleteUserById = async (userId) => {
         const filteredUsers = users.filter(user => user.userId !== parseInt(userId, 10));
 
         if (filteredUsers.length === users.length) {
-            throw new Error(`User with ID ${userId} not found`);
+            throw new Error(`userId: ${userId} not found`);
         }
 
         // 변경된 userId.json 저장
         await saveUsers(filteredUsers);
-        console.log(`User with ID ${userId} has been deleted.`);
+        console.log(`userId ${userId} has been deleted.`);
     } catch (error) {
         console.error(`Error deleting user: ${error.message}`);
         throw error;

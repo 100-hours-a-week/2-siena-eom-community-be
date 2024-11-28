@@ -22,9 +22,17 @@ const signup = async (req, res) => {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
+
+        const generateUserId = (users) => {
+            if (users.length === 0) {
+                return 1; // 유저가 없는 경우 ID를 1로 설정
+            }
+            return Math.max(...users.map(user => user.userId)) + 1; // 가장 큰 ID + 1
+        };
+
         // 새 유저 생성
         const newUser = {
-            userId: users.length + 1,
+            userId: generateUserId(users),
             email,
             password,
             nickname,
