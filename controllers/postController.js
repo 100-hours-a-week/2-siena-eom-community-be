@@ -433,6 +433,7 @@ const deleteComment = async (req, res) => {
     }
 };
 
+// 좋아요 추가
 const addLike = async (req, res) => {
     try {
         const postId = parseInt(req.params.postId, 10);
@@ -465,6 +466,7 @@ const addLike = async (req, res) => {
     }
 };
 
+// 좋아요 삭제
 const removeLike = async (req, res) => {
     try {
         const postId = parseInt(req.params.postId, 10);
@@ -498,6 +500,29 @@ const removeLike = async (req, res) => {
     }
 };
 
+// 게시글 사진 업로드
+const createPostImg = async (req, res) => {
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({
+                message: 'invalid_file',
+                data: null,
+            });
+        }
+
+        const filePath = `/uploads/${file.filename}`;
+        return res.status(201).json({
+            message: 'Image_upload_success',
+            data: { filePath: filePath },
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
+    }
+};
+
+
 
 module.exports = { 
     postWrite,
@@ -510,5 +535,6 @@ module.exports = {
     getCommentById,
     deleteComment,
     addLike,
-    removeLike
+    removeLike,
+    createPostImg,
 };

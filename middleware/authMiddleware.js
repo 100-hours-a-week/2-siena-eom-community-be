@@ -1,5 +1,4 @@
 const requireAuth = (req, res, next) => {
-    console.log('Current Session:', req.session); // 디버깅용..
 
     if (!req.session.userId) {
         console.error('Unauthorized access attempt:', req.session);

@@ -4,7 +4,9 @@ const {
     emailValid,
     nicknameValid,
     login,
+    createProfile,
 } = require('../controllers/userController');
+const upload = require("../middleware/multer");
 
 const router = express.Router();
 
@@ -19,5 +21,8 @@ router.get('/nicknameValid', nicknameValid);
 
 // 로그인
 router.post('/login', login);
+
+// 프로필 사진 업로드
+router.post('/profile', upload.single('profile'), createProfile);
 
 module.exports = router;

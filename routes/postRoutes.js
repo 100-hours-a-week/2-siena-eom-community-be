@@ -11,7 +11,9 @@ const { postWrite,
         deleteComment,
         addLike,
         removeLike,
+        createPostImg
     } = require('../controllers/postController');
+const upload = require("../middleware/multer");
 
 const router = express.Router();
 
@@ -32,6 +34,9 @@ router.get('/:postId/comments/:commentId', requireAuth, getCommentById);
 
 // 댓글 작성
 router.post('/:postId/comments', requireAuth, commentWrite);
+
+// 게시글 이미지 업로드
+router.post('/:postId/postImage', upload.single('postImage'), createPostImg);
 
 // 게시글 상세 조회
 router.get('/:postId', requireAuth, getPostById);

@@ -22,7 +22,6 @@ const signup = async (req, res) => {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-
         const generateUserId = (users) => {
             if (users.length === 0) {
                 return 1; // 유저가 없는 경우 ID를 1로 설정
@@ -168,9 +167,17 @@ const getUserById = async (req, res) => {
     try {
         const userId = req.params.userId;
         const user = await userModel.getUserById(userId);
+        console.log("서버 응답 데이터:", user);
         if (!user) {
             return res.status(404).json({ message: 'User not found', data: null });
         }
+
+        // 프로필 경로를 절대 경로로 변환 (클라이언트가 바로 띄울수있게)
+        user.profile = user.profile
+            ? `http://localhost:3001${user.profile}`
+            : "http://localhost:3001/images/default-profile.png";
+        console.log("서버 응답 데이터 user.profile:", user.profile);
+
          res.status(200).json(user);
     } catch (error) {
         console.error(error);
@@ -312,6 +319,33 @@ const deleteAccount = async (req, res) => {
     }
 };
 
+// 프로필 사진 업로드
+const createProfile = async (req, res) => {
+    try {
+        // //디버깅용
+        // console.log("요청 본문:", req.body);
+        // console.log("업로드된 파일:", req.file);
+
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({
+                message: 'invalid_file',
+                data: null,
+            });
+        }
+
+        const filePath = `/uploads/${file.filename}`;
+        return res.status(201).json({
+            message: 'profile_upload_success',
+            data: { filePath: filePath },
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
+    }
+};
+
+
 module.exports = { 
     signup,
     emailValid,
@@ -323,4 +357,5 @@ module.exports = {
     updateProfileImage,
     deleteAccount,
     updatePassword,
+    createProfile,
 };

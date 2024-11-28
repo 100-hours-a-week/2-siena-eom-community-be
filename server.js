@@ -28,11 +28,15 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+
 app.use(express.json());
+
 app.use('/guest', guestRoutes);
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
 app.use('/images', express.static(path.join(__dirname, '../2-siena-eom-community-fe-1/images')));
+
 
 // 서버 실행
 app.listen(PORT, () => {
