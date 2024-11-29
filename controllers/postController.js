@@ -1,5 +1,5 @@
 const postModel = require('../models/postModel');
-const { getAllUsers, getUserById } = require('../models/userModel');
+const { getAllUsers} = require('../models/userModel');
 
 // 게시글 작성 처리
 const postWrite = async (req, res) => {
