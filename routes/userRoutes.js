@@ -2,12 +2,14 @@ const express = require('express');
 const requireAuth = require('../middleware/authMiddleware');
 const { getUserById, 
         updateNickname, 
-        updateProfileImage, 
+        updateProfileImage,
         nicknameValid,
         updatePassword,
         logout,
-        deleteAccount, 
+        deleteAccount,
+        createProfile, 
     } = require('../controllers/userController');
+const upload = require("../middleware/multer");
 
 const router = express.Router();
 
@@ -19,6 +21,7 @@ router.get('/:userId/nicknameValid', requireAuth, nicknameValid);
 
 // 프로필 이미지 수정
 router.put('/:userId/profile', requireAuth, updateProfileImage);
+router.post('/:userId/profile', upload.single('profile'), createProfile);
 
 // 비밀번호 수정
 router.patch('/:userId/password', requireAuth, updatePassword);

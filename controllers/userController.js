@@ -172,11 +172,8 @@ const getUserById = async (req, res) => {
             return res.status(404).json({ message: 'User not found', data: null });
         }
 
-        // 프로필 경로를 절대 경로로 변환 (클라이언트가 바로 띄울수있게)
-        user.profile = user.profile
-            ? `http://localhost:3001${user.profile}`
-            : "http://localhost:3001/images/default-profile.png";
-        console.log("서버 응답 데이터 user.profile:", user.profile);
+        // (수정)이미 절대경로로 저장되어있음
+        user.profile = user.profile;
 
          res.status(200).json(user);
     } catch (error) {
@@ -230,15 +227,20 @@ const updateNickname = async (req, res) => {
 };
 
 // 프로필사진 변경 처리
-// TODO: 새로운 이미지가 업로드됐을 때 이전 이미지 삭제 처리...??
 const updateProfileImage = async (req, res) => {
     try {
         const userId = req.session.userId;
+
         const { profile } = req.body;
+        if (!profile) {
+            return res.status(400).json({
+                message: 'invalid_profile_path',
+                data: null,
+            });
+        }
 
         const users = await getAllUsers();
         const user = users.find((u) => u.userId === userId);
-
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
@@ -322,10 +324,6 @@ const deleteAccount = async (req, res) => {
 // 프로필 사진 업로드
 const createProfile = async (req, res) => {
     try {
-        // //디버깅용
-        // console.log("요청 본문:", req.body);
-        // console.log("업로드된 파일:", req.file);
-
         const file = req.file;
         if (!file) {
             return res.status(400).json({
@@ -337,7 +335,7 @@ const createProfile = async (req, res) => {
         const filePath = `/uploads/${file.filename}`;
         return res.status(201).json({
             message: 'profile_upload_success',
-            data: { filePath: filePath },
+            data: { filePath: `http://localhost:3001${filePath}` }, //절대경로반환
         });
     } catch (error) {
         console.error(error);

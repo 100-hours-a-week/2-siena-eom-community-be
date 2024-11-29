@@ -514,7 +514,7 @@ const createPostImg = async (req, res) => {
         const filePath = `/uploads/${file.filename}`;
         return res.status(201).json({
             message: 'Image_upload_success',
-            data: { filePath: filePath },
+            data: { filePath: `http://localhost:3001${filePath}` }, // 절대경로로저장
         });
     } catch (error) {
         console.error(error);
