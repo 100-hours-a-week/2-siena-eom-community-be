@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "postId": 1,
+    "author": 1,
+    "title": "첫 번째 게시글 예시입니다.",
+    "content": "게시글 이미지를 업로드 해보겠습니다.",
+    "postImage": "http://localhost:3001/uploads/1732914385256-Image20241022120102.png",
+    "postDate": "2024-11-30 06:06:25",
+    "like": 1,
+    "view": 24,
+    "commentsCount": 1,
+    "likes": [
+      2
+    ]
+  }
+]

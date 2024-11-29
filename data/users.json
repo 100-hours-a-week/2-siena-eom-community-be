@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "userId": 1,
+    "email": "user1@aa.com",
+    "password": "Asdf1234!",
+    "nickname": "프사없는애",
+    "profile": "http://localhost:3001/images/default-profile.png"
+  },
+  {
+    "userId": 2,
+    "email": "user2@aa.com",
+    "password": "Asdf1234!",
+    "nickname": "프사있는애",
+    "profile": "http://localhost:3001/uploads/1732914289202-profileEX.jpeg"
+  }
+]
