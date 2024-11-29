@@ -1,13 +1,36 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const userController = require('../controllers/userController');
+const requireAuth = require('../middleware/authMiddleware');
+const { getUserById, 
+        updateNickname, 
+        updateProfileImage, 
+        nicknameValid,
+        updatePassword,
+        logout,
+        deleteAccount, 
+    } = require('../controllers/userController');
 
 const router = express.Router();
 
-const userFilePath = path.join(__dirname, '../data/users.json');
+// 닉네임 수정
+router.patch('/:userId/nickname', requireAuth, updateNickname);
 
-// 특정 사용자 조회
-router.get('/:userId', userController.getUserById);
+//닉네임 중복확인
+router.get('/:userId/nicknameValid', requireAuth, nicknameValid);
+
+// 프로필 이미지 수정
+router.put('/:userId/profile', requireAuth, updateProfileImage);
+
+// 비밀번호 수정
+router.patch('/:userId/password', requireAuth, updatePassword);
+
+// 특정 회원 정보 조회
+router.get('/:userId', requireAuth, getUserById);
+// router.get('/:userId', getUserById); // 포스트맨 테스트용
+
+// 회원 탈퇴
+router.delete('/:userId', requireAuth, deleteAccount);
+
+// 로그아웃
+router.post('/logout', requireAuth, logout);
 
 module.exports = router;
