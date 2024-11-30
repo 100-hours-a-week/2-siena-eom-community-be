@@ -57,7 +57,7 @@ const emailValid = async (req, res) => {
     try {
         const { email } = req.query;
 
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (!email || validateEmail(email)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
@@ -80,7 +80,7 @@ const nicknameValid = async (req, res) => {
     try {
         const { nickname } = req.query;
 
-        if (!nickname || nickname.length > 10 || /\s/.test(nickname)) {
+        if (!nickname || validateNickname(nickname)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
@@ -148,6 +148,13 @@ const login = async (req, res) => {
 
 // 로그아웃 처리
 const logout = (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+            message: 'unauthorized',
+            data: null,
+        });
+    }
+    
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({
