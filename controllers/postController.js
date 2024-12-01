@@ -77,13 +77,6 @@ const getPostList = async (req, res) => {
             };
         });
 
-        if (!posts || posts.length === 0) {
-            return res.status(200).json({
-                message: 'posts_loaded',
-                data: [],
-            });
-        }
-
         // 게시글 목록 반환 유저 닉네임, 프로필사진 포함
         return res.status(200).json({
             message: 'posts_loaded',
@@ -108,7 +101,7 @@ const getPostById = async (req, res) => {
 
         const post = posts.find((p) => p.postId === postId);
         if (!post) {
-            return res.status(404).json({ message: 'Post not found', data: null });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
         post.view = (post.view || 0) + 1; // 조회수 증가
@@ -142,7 +135,7 @@ const getPostById = async (req, res) => {
          res.status(200).json({ message: 'post_loaded', data: postWithAuthComm });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error', data: null });
+        res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
@@ -152,7 +145,6 @@ const updatePost = async (req, res) => {
         const userId = req.session.userId;
         const postId = parseInt(req.params.postId, 10);
 
-        // 요청 본문에서 데이터 가져오기
         const { title, content, postImage } = req.body;
 
         if (!title || !content) {
@@ -162,7 +154,7 @@ const updatePost = async (req, res) => {
         const posts = await postModel.getAllPosts();
         const post = posts.find((p) => p.postId === postId);
         if (!post) {
-            return res.status(404).json({ message: 'Post not found', data: null });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
         // 작성자랑 수정하려는 사용자가 같은지 확인
@@ -204,7 +196,6 @@ const deletePost = async (req, res) => {
 
         const posts = await postModel.getAllPosts();
         const post = posts.find(post => post.postId === postId);
-
         if (!post) {
             return res.status(404).json({
                 message: 'post_not_found',
@@ -330,10 +321,10 @@ const updateComment = async (req, res) => {
         const comment = comments.find((p) => p.commentId === commentId);
 
         if (!post) {
-            return res.status(404).json({ message: 'Post not found', data: null });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
         if (!comment) {
-            return res.status(404).json({ message: 'Comment not found', data: null });
+            return res.status(404).json({ message: 'comment_not_found', data: null });
         }
 
         // 댓글 작성자랑 수정하려는 사용자가 같은지 확인
@@ -364,12 +355,12 @@ const getCommentById = async (req, res) => {
     try {
         const comment = await postModel.getCommentById(postId, commentId);
         if (!comment) {
-            return res.status(404).json({ message: "Comment not found", data: null });
+            return res.status(404).json({ message: "comment_not_found", data: null });
         }
 
-        res.status(200).json({ message: "Comment loaded", data: comment });
+        res.status(200).json({ message: "comment_loaded", data: comment });
     } catch (error) {
-        res.status(500).json({ message: "Internal server error", data: null });
+        res.status(500).json({ message: "internal_server_error", data: null });
     }
 };
 
@@ -380,7 +371,7 @@ const deleteComment = async (req, res) => {
         const commentId = parseInt(req.params.commentId, 10);
 
         if (isNaN(postId) || isNaN(commentId)) {
-            console.error("Invalid postId or commentId");
+            console.error("invalid_postId_or_commentId");
             return res.status(400).json({
                 message: 'invalid_request',
                 data: null,
@@ -393,7 +384,7 @@ const deleteComment = async (req, res) => {
         const post = posts.find((p) => p.postId === postId);
         const comment = await postModel.getCommentById(postId, commentId);
         if (!post) {
-            return res.status(404).json({ message: 'Post not found', data: null });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
         if (!comment) {
             return res.status(404).json({
