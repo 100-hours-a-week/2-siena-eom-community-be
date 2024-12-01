@@ -40,6 +40,7 @@ router.post('/:postId/postImage', upload.single('postImage'), createPostImg);
 
 // 게시글 상세 조회
 router.get('/:postId', requireAuth, getPostById);
+// router.get('/:postId', getPostById); // 포스트맨 테스트용
 
 // 게시글 수정
 router.patch('/:postId', requireAuth, updatePost);

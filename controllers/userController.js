@@ -57,7 +57,7 @@ const emailValid = async (req, res) => {
     try {
         const { email } = req.query;
 
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (!email || validateEmail(email)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
@@ -80,7 +80,7 @@ const nicknameValid = async (req, res) => {
     try {
         const { nickname } = req.query;
 
-        if (!nickname || nickname.length > 10 || /\s/.test(nickname)) {
+        if (!nickname || validateNickname(nickname)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
@@ -148,6 +148,13 @@ const login = async (req, res) => {
 
 // 로그아웃 처리
 const logout = (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+            message: 'unauthorized',
+            data: null,
+        });
+    }
+
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({
@@ -169,7 +176,7 @@ const getUserById = async (req, res) => {
         const user = await userModel.getUserById(userId);
         console.log("서버 응답 데이터:", user);
         if (!user) {
-            return res.status(404).json({ message: 'User not found', data: null });
+            return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
         // (수정)이미 절대경로로 저장되어있음
@@ -178,7 +185,7 @@ const getUserById = async (req, res) => {
          res.status(200).json(user);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error', data: null });
+        res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
@@ -199,7 +206,7 @@ const updateNickname = async (req, res) => {
         // 닉네임 중복 체크
         if (users.some((u) => u.nickname === nickname && u.userId !== userId)) {
             return res.status(409).json({
-                message: 'nickname_already_exists',
+                message: 'already_exists',
                 data: null,
             });
         }
@@ -261,6 +268,7 @@ const updateProfileImage = async (req, res) => {
     }
 };
 
+// 비밀번호 변경 처리
 const updatePassword = async (req, res) => {
     try {
         const userId = req.session.userId;
@@ -309,7 +317,7 @@ const deleteAccount = async (req, res) => {
         await deleteUserById(userId);
 
         res.status(200).json({
-            message: 'user_deleted',
+            message: 'account_deleted',
             data: null,
         });
     } catch (error) {
