@@ -80,7 +80,7 @@ const nicknameValid = async (req, res) => {
     try {
         const { nickname } = req.query;
 
-        if (!nickname || validateNickname(nickname)) {
+        if (!nickname || !validateNickname(nickname)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
