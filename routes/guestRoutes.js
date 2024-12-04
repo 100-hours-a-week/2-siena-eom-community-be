@@ -14,7 +14,7 @@ const router = express.Router();
 router.post('/signup', signup);
 
 // 이메일 중복 확인
-router.get('/emailValid', emailValid);
+router.post('/emailValid', emailValid);
 
 // 닉네임 중복 확인
 router.get('/nicknameValid', nicknameValid);
