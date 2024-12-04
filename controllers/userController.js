@@ -55,9 +55,9 @@ const signup = async (req, res) => {
 // 이메일 중복 확인
 const emailValid = async (req, res) => {
     try {
-        const { email } = req.query;
+        const { email } = req.body;
 
-        if (!email || validateEmail(email)) {
+        if (!email || !validateEmail(email)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
