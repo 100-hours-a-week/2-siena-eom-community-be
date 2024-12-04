@@ -12,5 +12,12 @@
     "password": "Asdf1234!",
     "nickname": "프사있는애",
     "profile": "http://localhost:3001/uploads/1732914289202-profileEX.jpeg"
+  },
+  {
+    "userId": 3,
+    "email": "aeiou@aa.com",
+    "password": "Asdf1234!",
+    "nickname": "siena",
+    "profile": "http://localhost:3001/uploads/1733279816312-1732812390947-IMG_3827.PNG"
   }
 ]
