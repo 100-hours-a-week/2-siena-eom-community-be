@@ -104,8 +104,9 @@ const getPostById = async (req, res) => {
             return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
-        post.view = (post.view || 0) + 1; // 조회수 증가
-        await postModel.savePosts(posts); // 변경된 데이터 저장(증가된 조회수 반영)
+        // post.view = (post.view || 0) + 1; // 조회수 증가
+        // await postModel.savePosts(posts); // 변경된 데이터 저장(증가된 조회수 반영)
+        // 게시글 조회수 API 분리
 
         // 게시글 작성자의 닉네임 및 프로필 추가
         const author = users.find((user) => user.userId === post.author);
@@ -138,6 +139,25 @@ const getPostById = async (req, res) => {
         res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
+
+// 게시글 조회수 증가
+const increaseView = async (req, res) => {
+    try {
+        const postId = parseInt(req.params.postId, 10);
+        const posts = await postModel.getAllPosts();
+        const post = posts.find((p) => p.postId === postId);
+        if(!post) {
+            return res.status(404).json({message: 'post_not_found', data: null})
+        }
+
+        post.view = (post.view || 0) + 1;
+        await postModel.savePosts(posts);
+
+        res.status(200).json({ message: 'increase_view_count', data:null})
+    } catch(error){
+        res.status(500).json({ message: 'internal_server_error', data: null})
+    }
+}
 
 // 게시글 수정 처리
 const updatePost = async (req, res) => {
@@ -528,4 +548,5 @@ module.exports = {
     addLike,
     removeLike,
     createPostImg,
+    increaseView,
 };

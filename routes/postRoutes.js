@@ -11,7 +11,8 @@ const { postWrite,
         deleteComment,
         addLike,
         removeLike,
-        createPostImg
+        createPostImg,
+        increaseView,
     } = require('../controllers/postController');
 const upload = require("../middleware/multer");
 
@@ -37,6 +38,9 @@ router.post('/:postId/comments', requireAuth, commentWrite);
 
 // 게시글 이미지 업로드
 router.post('/:postId/postImage', upload.single('postImage'), createPostImg);
+
+// 게시글 조회수 증가
+router.post('/:postId/viewCount', requireAuth, increaseView);
 
 // 게시글 상세 조회
 router.get('/:postId', requireAuth, getPostById);
