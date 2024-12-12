@@ -43,7 +43,8 @@ const postWrite = async (req, res) => {
             content,
             postImage: postImage || null,
             postDate: postDate,
-            like: 0,
+            // like: 0,
+            likeCount: 0,
             view: 0,
             commentsCount: 0,
         };
@@ -467,10 +468,10 @@ const addLike = async (req, res) => {
         }
 
         post.likes.push(userId); // likes 배열에 좋아요를 누른 userId 추가
-        post.like = post.likes.length; // 좋아요 수 업데이트
+        post.likeCount = post.likes.length; // 좋아요 수 업데이트
 
         await postModel.savePosts(posts);
-        res.status(201).json({ message: "like_added", data: { likes: post.likes, likeCount: post.like } });
+        res.status(201).json({ message: "like_added", data: { likes: post.likes, likeCount: post.likeCount } });
     } catch (error) {
         console.error("Error adding like:", error);
         res.status(500).json({ message: "internal_server_error", data: null });
@@ -501,10 +502,10 @@ const removeLike = async (req, res) => {
         }
 
         post.likes.splice(index, 1); // likes 배열에서 userId 제거
-        post.like = post.likes.length; // 좋아요 수 업데이트
+        post.likeCount = post.likes.length; // 좋아요 수 업데이트
 
         await postModel.savePosts(posts);
-        res.status(200).json({ message: "like_canceled", data: { likes: post.likes, likeCount: post.like } });
+        res.status(200).json({ message: "like_canceled", data: { likes: post.likes, likeCount: post.likeCount } });
     } catch (error) {
         console.error("Error removing like:", error);
         res.status(500).json({ message: "internal_server_error", data: null });
@@ -533,6 +534,45 @@ const createPostImg = async (req, res) => {
     }
 };
 
+// 댓글 목록 조회
+const getCommentsByPostId = async (req, res) => {
+    try {
+        const postId = parseInt(req.params.postId, 10);
+        if (isNaN(postId)) {
+            return res.status(400).json({ message: 'invalid_post_id', data: null });
+        }
+
+        const comments = await postModel.getAllComments();
+        const users = await getAllUsers();
+
+        // 해당 게시글의 댓글 필터링
+        const filteredComments = comments.filter(
+            (comment) => parseInt(comment.postId, 10) === postId
+        );
+
+        // 댓글에 작성자의 닉네임과 프로필 추가
+        const commentsWithAuth = filteredComments.map((comment) => {
+            const author = users.find((user) => String(user.userId) === String(comment.commentAuthor));
+            return {
+                ...comment,
+                authorProfile: author?.profile || 'http://localhost:3001/images/default-profile.png',
+                authorNickname: author?.nickname || 'Unknown',
+            };
+        });
+
+        return res.status(200).json({
+            message: 'comments_loaded',
+            data: commentsWithAuth,
+        });
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        return res.status(500).json({
+            message: 'internal_server_error',
+            data: null,
+        });
+    }
+};
+
 
 
 module.exports = { 
@@ -549,4 +589,5 @@ module.exports = {
     removeLike,
     createPostImg,
     increaseView,
+    getCommentsByPostId,
 };

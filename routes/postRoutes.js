@@ -13,6 +13,7 @@ const { postWrite,
         removeLike,
         createPostImg,
         increaseView,
+        getCommentsByPostId,
     } = require('../controllers/postController');
 const upload = require("../middleware/multer");
 
@@ -23,6 +24,9 @@ router.post('/:postId/likes/:userId', requireAuth, addLike);
 
 // 좋아요 삭제
 router.delete("/:postId/likes/:userId", requireAuth, removeLike);
+
+// 특정 게시글의 댓글 목록 조회
+router.get('/:postId/comments', getCommentsByPostId);
 
 // 댓글 삭제
 router.delete('/:postId/comments/:commentId', requireAuth, deleteComment);
