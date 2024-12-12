@@ -1,10 +1,20 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+// uploads 폴더 존재 여부 확인 및 생성 함수
+const createUploadsFolder = (folderPath) => {
+    if (!fs.existsSync(folderPath)) {
+        console.log(`"${folderPath}" 폴더가 존재하지 않아 새로 생성합니다.`);
+        fs.mkdirSync(folderPath, { recursive: true });
+    }
+};
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // console.log("요청 파일 저장 경로:", path.join(__dirname, "../uploads")); //디버깅용
         const uploadPath = path.join(__dirname, "../uploads");
+        createUploadsFolder(uploadPath);
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
