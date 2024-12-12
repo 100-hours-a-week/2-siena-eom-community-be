@@ -11,7 +11,9 @@ const { postWrite,
         deleteComment,
         addLike,
         removeLike,
-        createPostImg
+        createPostImg,
+        increaseView,
+        getCommentsByPostId,
     } = require('../controllers/postController');
 const upload = require("../middleware/multer");
 
@@ -22,6 +24,9 @@ router.post('/:postId/likes/:userId', requireAuth, addLike);
 
 // 좋아요 삭제
 router.delete("/:postId/likes/:userId", requireAuth, removeLike);
+
+// 특정 게시글의 댓글 목록 조회
+router.get('/:postId/comments', getCommentsByPostId);
 
 // 댓글 삭제
 router.delete('/:postId/comments/:commentId', requireAuth, deleteComment);
@@ -37,6 +42,9 @@ router.post('/:postId/comments', requireAuth, commentWrite);
 
 // 게시글 이미지 업로드
 router.post('/:postId/postImage', upload.single('postImage'), createPostImg);
+
+// 게시글 조회수 증가
+router.post('/:postId/viewCount', requireAuth, increaseView);
 
 // 게시글 상세 조회
 router.get('/:postId', requireAuth, getPostById);
