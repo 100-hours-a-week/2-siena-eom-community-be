@@ -1,0 +1,16 @@
+[
+  {
+    "postId": 1,
+    "author": 1,
+    "title": "게시글 테스트중..",
+    "content": "반려사항 다 수정했고 QA도 다시 진행했는데\n또 예상치 못한 곳에서 오류가 날까봐 걱정이된다..\n꼼꼼하게 한다고 했는데...!!!! ( ･ᴗ･̥̥̥ ) \n\n이미지 추가해서 수정",
+    "postImage": "http://localhost:3001/uploads/1734014175543-Image20241022120102.png",
+    "postDate": "2024-12-12 23:35:09",
+    "likeCount": 1,
+    "view": 3,
+    "commentsCount": 2,
+    "likes": [
+      1
+    ]
+  }
+]
