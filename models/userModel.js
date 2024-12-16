@@ -2,7 +2,6 @@ const fs = require('fs').promises;
 const path = require('path');
 
  const filePath = path.join(__dirname, '../data/users.json');
-//const filePath = './data/users.json';
 
 // 모든 사용자 데이터 가져오기
 const getAllUsers = async () => {

@@ -1,10 +1,19 @@
 const postModel = require('../models/postModel');
 const { getAllUsers} = require('../models/userModel');
+const formatDate = () => {
+    const date = new Date();
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+};
 
 // 게시글 작성 처리
 const postWrite = async (req, res) => {
     try {
-        //const userId = req.body.userId; //postman 테스트
         const userId = req.session.userId;
         const { title, content, postImage} = req.body;
 
@@ -15,17 +24,6 @@ const postWrite = async (req, res) => {
 
         const posts = await postModel.getAllPosts();
 
-        // 날짜를 yyyy-mm-dd hh:mm:ss 형식으로 저장하기
-        const formatDate = () => {
-            const date = new Date();
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            const hh = String(date.getHours()).padStart(2, '0');
-            const min = String(date.getMinutes()).padStart(2, '0');
-            const ss = String(date.getSeconds()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-        };
         const postDate = formatDate();
 
         const generatePostId = (posts) => { // length + 1 대신
@@ -104,10 +102,6 @@ const getPostById = async (req, res) => {
         if (!post) {
             return res.status(404).json({ message: 'post_not_found', data: null });
         }
-
-        // post.view = (post.view || 0) + 1; // 조회수 증가
-        // await postModel.savePosts(posts); // 변경된 데이터 저장(증가된 조회수 반영)
-        // 게시글 조회수 API 분리
 
         // 게시글 작성자의 닉네임 및 프로필 추가
         const author = users.find((user) => user.userId === post.author);
@@ -269,16 +263,6 @@ const commentWrite = async (req, res) => {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
-        const formatDate = () => {
-            const date = new Date();
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            const hh = String(date.getHours()).padStart(2, '0');
-            const min = String(date.getMinutes()).padStart(2, '0');
-            const ss = String(date.getSeconds()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-        };
         const commentDate = formatDate();
 
         const generateCommentId = (comments) => {
@@ -572,8 +556,6 @@ const getCommentsByPostId = async (req, res) => {
         });
     }
 };
-
-
 
 module.exports = { 
     postWrite,

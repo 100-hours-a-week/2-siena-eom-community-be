@@ -28,7 +28,6 @@ router.patch('/:userId/password', requireAuth, updatePassword);
 
 // 특정 회원 정보 조회
 router.get('/:userId', requireAuth, getUserById);
-// router.get('/:userId', getUserById); // 포스트맨 테스트용
 
 // 회원 탈퇴
 router.delete('/:userId', requireAuth, deleteAccount);

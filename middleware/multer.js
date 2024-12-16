@@ -12,14 +12,12 @@ const createUploadsFolder = (folderPath) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // console.log("요청 파일 저장 경로:", path.join(__dirname, "../uploads")); //디버깅용
         const uploadPath = path.join(__dirname, "../uploads");
         createUploadsFolder(uploadPath);
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         const uniqueName = `${Date.now()}-${file.originalname}`;
-        // console.log("업로드된 파일 이름:", uniqueName); //디버깅용
         cb(null, uniqueName);
     },
 });

@@ -9,8 +9,6 @@ const validateNickname = (nickname) => nickname.length <= 10 && !/\s/.test(nickn
 const signup = async (req, res) => {
     try {
         const { email, password, nickname, profile } = req.body;
-
-        // 필수 필드 유효성 검사
         if (!email || !password || !nickname || !validateEmail(email) || !validatePassword(password) || !validateNickname(nickname)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
@@ -56,7 +54,6 @@ const signup = async (req, res) => {
 const emailValid = async (req, res) => {
     try {
         const { email } = req.body;
-
         if (!email || !validateEmail(email)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
@@ -79,7 +76,6 @@ const emailValid = async (req, res) => {
 const nicknameValid = async (req, res) => {
     try {
         const { nickname } = req.query;
-
         if (!nickname || !validateNickname(nickname)) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
@@ -102,7 +98,6 @@ const nicknameValid = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         if (!email || !password || !validateEmail(email) || !validatePassword(password)) {
             return res.status(400).json({
                 message: 'invalid_request',
@@ -112,10 +107,6 @@ const login = async (req, res) => {
 
         const users = await getAllUsers();
         const user = users.find((user) => user.email === email);
-
-        // 유저 정보 확인 로그
-        console.log('로그인 요청: user', user);
-
         if (!user) {
             return res.status(401).json({
                 message: 'invalid_account',
@@ -130,8 +121,6 @@ const login = async (req, res) => {
 
         // 세션에 userId 저장
         req.session.userId = user.userId;
-        console.log('user.userId:', user.userId); // userId 확인
-        console.log('로그인 성공, 세션에 저장된 userId:', req.session.userId); // 디버깅용
 
         return res.status(200).json({
             message: 'login_success',
@@ -174,12 +163,10 @@ const getUserById = async (req, res) => {
     try {
         const userId = req.params.userId;
         const user = await userModel.getUserById(userId);
-        console.log("서버 응답 데이터:", user);
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
-        // (수정)이미 절대경로로 저장되어있음
         user.profile = user.profile;
 
          res.status(200).json(user);
@@ -212,7 +199,6 @@ const updateNickname = async (req, res) => {
         }
         
         const user = users.find((u) => u.userId === userId);
-
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
@@ -276,7 +262,6 @@ const updatePassword = async (req, res) => {
 
         const users = await getAllUsers();
         const user = users.find((u) => u.userId === userId);
-
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
@@ -302,10 +287,8 @@ const deleteAccount = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // 사용자가 존재하는지 확인
         const users = await getAllUsers();
         const user = users.find(user => user.userId === parseInt(userId, 10));
-
         if (!user) {
             return res.status(404).json({
                 message: 'user_not_found',
@@ -350,7 +333,6 @@ const createProfile = async (req, res) => {
         return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
-
 
 module.exports = { 
     signup,

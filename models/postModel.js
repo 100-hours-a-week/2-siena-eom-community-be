@@ -82,24 +82,20 @@ const deleteCommentById = async (commentId) => {
     try {
         const parsedCommentId = parseInt(commentId, 10);
         if (isNaN(parsedCommentId)) {
-            throw new Error(`Invalid comment ID: ${commentId}`);
+            throw new Error(`Invalid commentId: ${commentId}`);
         }
 
         const comments = await getAllComments();
-
-        // 댓글 필터링
         const filteredComments = comments.filter(
             (comment) => parseInt(comment.commentId, 10) !== parsedCommentId
         );
 
         if (comments.length === filteredComments.length) {
-            throw new Error(`Comment with ID ${parsedCommentId} not found`);
+            throw new Error(`commentId ${parsedCommentId} not found`);
         }
 
         await saveComments(filteredComments);
-        console.log(`Comment with ID ${parsedCommentId} has been deleted.`);
     } catch (error) {
-        console.error(`Error deleting comment: ${error.message}`);
         throw error;
     }
 };
