@@ -1,13 +1,15 @@
-const express = require('express');
-const session = require('express-session');
-const userRoutes = require('./routes/userRoutes');
-const guestRoutes = require('./routes/guestRoutes');
-const postRoutes = require('./routes/postRoutes')
-const cors = require('cors');
-const path = require('path');
+import express from 'express';
+import session from'express-session';
+import userRoutes from'./routes/userRoutes.js';
+import guestRoutes from'./routes/guestRoutes.js';
+import postRoutes from './routes/postRoutes.js';
+import cors from 'cors';
+import path from'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = 3001;
+const __dirname = path.dirname( fileURLToPath(import.meta.url) );
 
 app.use(cors({
     origin: 'http://localhost:8080',

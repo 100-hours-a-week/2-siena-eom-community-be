@@ -1,6 +1,6 @@
-const express = require('express');
-const requireAuth = require('../middleware/authMiddleware');
-const { getUserById, 
+import express from 'express';
+import requireAuth from '../middleware/authMiddleware.js';
+import { getUserById, 
         updateNickname, 
         updateProfileImage,
         nicknameValid,
@@ -8,8 +8,8 @@ const { getUserById,
         logout,
         deleteAccount,
         createProfile, 
-    } = require('../controllers/userController');
-const upload = require("../middleware/multer");
+    } from '../controllers/userController.js';
+import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
@@ -28,7 +28,6 @@ router.patch('/:userId/password', requireAuth, updatePassword);
 
 // 특정 회원 정보 조회
 router.get('/:userId', requireAuth, getUserById);
-// router.get('/:userId', getUserById); // 포스트맨 테스트용
 
 // 회원 탈퇴
 router.delete('/:userId', requireAuth, deleteAccount);
@@ -36,4 +35,4 @@ router.delete('/:userId', requireAuth, deleteAccount);
 // 로그아웃
 router.post('/logout', requireAuth, logout);
 
-module.exports = router;
+export default router;

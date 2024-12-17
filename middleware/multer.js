@@ -1,6 +1,10 @@
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname( fileURLToPath(import.meta.url) );
+
+import fs from "fs";
 
 // uploads 폴더 존재 여부 확인 및 생성 함수
 const createUploadsFolder = (folderPath) => {
@@ -12,14 +16,12 @@ const createUploadsFolder = (folderPath) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // console.log("요청 파일 저장 경로:", path.join(__dirname, "../uploads")); //디버깅용
         const uploadPath = path.join(__dirname, "../uploads");
         createUploadsFolder(uploadPath);
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         const uniqueName = `${Date.now()}-${file.originalname}`;
-        // console.log("업로드된 파일 이름:", uniqueName); //디버깅용
         cb(null, uniqueName);
     },
 });
@@ -38,4 +40,4 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-module.exports = upload;
+export default upload;

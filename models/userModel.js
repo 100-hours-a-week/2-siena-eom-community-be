@@ -1,8 +1,9 @@
-const fs = require('fs').promises;
-const path = require('path');
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
- const filePath = path.join(__dirname, '../data/users.json');
-//const filePath = './data/users.json';
+const __dirname = path.dirname( fileURLToPath(import.meta.url) );
+const filePath = path.join(__dirname, '../data/users.json');
 
 // 모든 사용자 데이터 가져오기
 const getAllUsers = async () => {
@@ -22,7 +23,6 @@ const deleteUserById = async (userId) => {
 
         // `userId`와 일치하는 사용자 필터링하여 제거
         const filteredUsers = users.filter(user => user.userId !== parseInt(userId, 10));
-
         if (filteredUsers.length === users.length) {
             throw new Error(`userId: ${userId} not found`);
         }
@@ -50,4 +50,10 @@ const getUserById = async (userId) => {
     }
 };
 
-module.exports = { getAllUsers, saveUsers, getUserById, deleteUserById };
+const userModel = {
+    getAllUsers,
+    saveUsers,
+    getUserById,
+    deleteUserById
+}
+export default userModel;
