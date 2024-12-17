@@ -1,5 +1,4 @@
-const { getAllUsers, saveUsers, deleteUserById } = require('../models/userModel');
-const userModel = require('../models/userModel');
+import userModel from '../models/userModel.js';
 
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length >= 5;
 const validatePassword = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,20}$/.test(password);
@@ -13,7 +12,7 @@ const signup = async (req, res) => {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
 
         // 중복 이메일 검사
         if (users.some((user) => user.email === email)) {
@@ -37,7 +36,7 @@ const signup = async (req, res) => {
         };
 
         users.push(newUser);
-        await saveUsers(users);
+        await userModel.saveUsers(users);
 
         return res.status(201).json({
             message: 'account_created',
@@ -58,7 +57,7 @@ const emailValid = async (req, res) => {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const emailExists = users.some((user) => user.email === email);
 
         if (emailExists) {
@@ -80,7 +79,7 @@ const nicknameValid = async (req, res) => {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const nicknameExists = users.some((user) => user.nickname === nickname);
 
         if (nicknameExists) {
@@ -105,7 +104,7 @@ const login = async (req, res) => {
             });
         }
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const user = users.find((user) => user.email === email);
         if (!user) {
             return res.status(401).json({
@@ -189,7 +188,7 @@ const updateNickname = async (req, res) => {
             });
         }
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         // 닉네임 중복 체크
         if (users.some((u) => u.nickname === nickname && u.userId !== userId)) {
             return res.status(409).json({
@@ -204,7 +203,7 @@ const updateNickname = async (req, res) => {
         }
 
         user.nickname = nickname;
-        await saveUsers(users);
+        await userModel.saveUsers(users);
 
         return res.status(200).json({
             message: 'nickname_updated',
@@ -232,14 +231,14 @@ const updateProfileImage = async (req, res) => {
             });
         }
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const user = users.find((u) => u.userId === userId);
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
         user.profile = profile;
-        await saveUsers(users);
+        await userModel.saveUsers(users);
 
         return res.status(200).json({
             message: 'profile_updated',
@@ -260,14 +259,14 @@ const updatePassword = async (req, res) => {
         const userId = req.session.userId;
         const { password } = req.body;
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const user = users.find((u) => u.userId === userId);
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
         user.password = password;
-        await saveUsers(users);
+        await userModel.saveUsers(users);
 
         return res.status(201).json({
             message: 'password_changed',
@@ -287,7 +286,7 @@ const deleteAccount = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const user = users.find(user => user.userId === parseInt(userId, 10));
         if (!user) {
             return res.status(404).json({
@@ -297,7 +296,7 @@ const deleteAccount = async (req, res) => {
         }
 
         // 사용자 삭제
-        await deleteUserById(userId);
+        await userModel.deleteUserById(userId);
 
         res.status(200).json({
             message: 'account_deleted',
@@ -334,7 +333,7 @@ const createProfile = async (req, res) => {
     }
 };
 
-module.exports = { 
+export { 
     signup,
     emailValid,
     nicknameValid,

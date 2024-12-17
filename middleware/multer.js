@@ -1,6 +1,10 @@
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname( fileURLToPath(import.meta.url) );
+
+import fs from "fs";
 
 // uploads 폴더 존재 여부 확인 및 생성 함수
 const createUploadsFolder = (folderPath) => {
@@ -36,4 +40,4 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-module.exports = upload;
+export default upload;

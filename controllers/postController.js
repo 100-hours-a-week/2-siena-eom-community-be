@@ -1,5 +1,6 @@
-const postModel = require('../models/postModel');
-const { getAllUsers} = require('../models/userModel');
+import postModel from '../models/postModel.js';
+import userModel from '../models/userModel.js';
+
 const formatDate = () => {
     const date = new Date();
     const yyyy = date.getFullYear();
@@ -64,7 +65,7 @@ const postWrite = async (req, res) => {
 const getPostList = async (req, res) => {
     try {
         const posts = await postModel.getAllPosts();
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
 
          // 사용자 프로필이랑 닉네임을 게시글 목록페이지에서 표시하기 위해
         const postsWithAuthor = posts.map(post => {
@@ -95,7 +96,7 @@ const getPostById = async (req, res) => {
     try {
         const postId = parseInt(req.params.postId, 10);
         const posts = await postModel.getAllPosts();
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const comments = await postModel.getAllComments();
 
         const post = posts.find((p) => p.postId === postId);
@@ -251,7 +252,7 @@ const commentWrite = async (req, res) => {
         }
 
         const posts = await postModel.getAllPosts();
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
         const comments = await postModel.getAllComments();
 
         const post = posts.find(post => post.postId === postId);
@@ -527,7 +528,7 @@ const getCommentsByPostId = async (req, res) => {
         }
 
         const comments = await postModel.getAllComments();
-        const users = await getAllUsers();
+        const users = await userModel.getAllUsers();
 
         // 해당 게시글의 댓글 필터링
         const filteredComments = comments.filter(
@@ -557,7 +558,7 @@ const getCommentsByPostId = async (req, res) => {
     }
 };
 
-module.exports = { 
+export { 
     postWrite,
     getPostList,
     getPostById,

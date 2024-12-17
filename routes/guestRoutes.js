@@ -1,12 +1,12 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
     signup,
     emailValid,
     nicknameValid,
     login,
     createProfile,
-} = require('../controllers/userController');
-const upload = require("../middleware/multer");
+} from '../controllers/userController.js';
+import upload from '../middleware/multer.js';
 
 const router = express.Router();
 
@@ -25,4 +25,4 @@ router.post('/login', login);
 // 프로필 사진 업로드
 router.post('/profile', upload.single('profile'), createProfile);
 
-module.exports = router;
+export default router;

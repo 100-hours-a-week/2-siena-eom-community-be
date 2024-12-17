@@ -1,21 +1,21 @@
-const express = require('express');
-const requireAuth = require('../middleware/authMiddleware');
-const { postWrite,
-        getPostList,
-        getPostById,
-        updatePost,
-        deletePost,
-        commentWrite,
-        updateComment,
-        getCommentById,
-        deleteComment,
-        addLike,
-        removeLike,
-        createPostImg,
-        increaseView,
-        getCommentsByPostId,
-    } = require('../controllers/postController');
-const upload = require("../middleware/multer");
+import express from 'express';
+import requireAuth from '../middleware/authMiddleware.js';
+import { postWrite,
+    getPostList,
+    getPostById,
+    updatePost,
+    deletePost,
+    commentWrite,
+    updateComment,
+    getCommentById,
+    deleteComment,
+    addLike,
+    removeLike,
+    createPostImg,
+    increaseView,
+    getCommentsByPostId,
+} from '../controllers/postController.js';
+import upload from '../middleware/multer.js';
 
 const router = express.Router();
 
@@ -48,7 +48,6 @@ router.post('/:postId/viewCount', requireAuth, increaseView);
 
 // 게시글 상세 조회
 router.get('/:postId', requireAuth, getPostById);
-// router.get('/:postId', getPostById); // 포스트맨 테스트용
 
 // 게시글 수정
 router.patch('/:postId', requireAuth, updatePost);
@@ -62,4 +61,4 @@ router.post('/', requireAuth, postWrite);
 // 게시글 목록 조회
 router.get('/', getPostList);
 
-module.exports = router;
+export default router;

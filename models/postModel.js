@@ -1,5 +1,8 @@
-const fs = require('fs').promises;
-const path = require('path');
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname( fileURLToPath(import.meta.url) );
 const filePath = path.join(__dirname, '../data/posts.json');
 const commentFilePath = path.join(__dirname, '../data/comments.json');
 
@@ -100,13 +103,15 @@ const deleteCommentById = async (commentId) => {
     }
 };
 
-module.exports = { 
-    getAllPosts, 
-    savePosts, 
-    getPostById, 
+const postModel = {
+    getAllPosts,
+    savePosts,
+    getPostById,
     deletePostById,
     getAllComments,
     saveComments,
     getCommentById,
     deleteCommentById,
-};
+}
+
+export default postModel;
