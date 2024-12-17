@@ -1,16 +1,1 @@
-[
-  {
-    "postId": 1,
-    "commentId": 1,
-    "commentAuthor": 1,
-    "content": "댓글 작성\n\n이번엔 수정",
-    "commentDate": "2024-12-12 23:35:17"
-  },
-  {
-    "postId": 1,
-    "commentId": 2,
-    "commentAuthor": 1,
-    "content": "다시 새로운 댓글",
-    "commentDate": "2024-12-12 23:35:53"
-  }
-]
+[]
