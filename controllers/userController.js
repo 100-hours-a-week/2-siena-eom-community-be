@@ -3,6 +3,8 @@ import userModel from '../models/userModel.js';
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length >= 5;
 const validatePassword = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,20}$/.test(password);
 const validateNickname = (nickname) => nickname.length <= 10 && !/\s/.test(nickname);
+const BASE_IP = 'http://3.39.237.226:3001';
+// const BASE_IP = 'localhost:3001';
 
 // 회원가입 처리
 const signup = async (req, res) => {
@@ -32,7 +34,7 @@ const signup = async (req, res) => {
             email,
             password,
             nickname,
-            profile: profile && profile.trim() !== '' ? profile : 'http://localhost:3001/images/default-profile.png', // 기본값 설정
+            profile: profile && profile.trim() !== '' ? profile : `${BASE_IP}/images/default-profile.png`, // 기본값 설정
         };
 
         users.push(newUser);
@@ -325,7 +327,7 @@ const createProfile = async (req, res) => {
         const filePath = `/uploads/${file.filename}`;
         return res.status(201).json({
             message: 'profile_upload_success',
-            data: { filePath: `http://localhost:3001${filePath}` }, //절대경로반환
+            data: { filePath: `${BASE_IP}${filePath}` }, //절대경로반환
         });
     } catch (error) {
         console.error(error);

@@ -1,5 +1,7 @@
 import postModel from '../models/postModel.js';
 import userModel from '../models/userModel.js';
+const BASE_IP = 'http://3.39.237.226:3001';
+// const BASE_IP = 'localhost:3001';
 
 const formatDate = () => {
     const date = new Date();
@@ -116,7 +118,7 @@ const getPostById = async (req, res) => {
             return {
                 ...comment,
                 commentContent: comment.content, // 원래 댓글 내용 유지
-                authorProfile: author?.profile || 'http://localhost:3001/images/default-profile.png',
+                authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
                 authorNickname: author?.nickname || 'Unknown',
             };
         });
@@ -124,7 +126,7 @@ const getPostById = async (req, res) => {
         // 게시글 데이터에 댓글 추가
         const postWithAuthComm = {
             ...post,
-            authorProfile: author?.profile || 'http://localhost:3001/images/default-profile.png',
+            authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
             authorNickname: author?.nickname || 'Unknown',
             comments: commentsWithAuth, // 처리된 댓글 데이터 추가
         };
@@ -511,7 +513,7 @@ const createPostImg = async (req, res) => {
         const filePath = `/uploads/${file.filename}`;
         return res.status(201).json({
             message: 'Image_upload_success',
-            data: { filePath: `http://localhost:3001${filePath}` }, // 절대경로로저장
+            data: { filePath: `${BASE_IP}${filePath}` }, // 절대경로로저장
         });
     } catch (error) {
         console.error(error);
@@ -540,7 +542,7 @@ const getCommentsByPostId = async (req, res) => {
             const author = users.find((user) => String(user.userId) === String(comment.commentAuthor));
             return {
                 ...comment,
-                authorProfile: author?.profile || 'http://localhost:3001/images/default-profile.png',
+                authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
                 authorNickname: author?.nickname || 'Unknown',
             };
         });
