@@ -6,8 +6,9 @@ import postRoutes from './routes/postRoutes.js';
 import cors from 'cors';
 import path from'path';
 import { fileURLToPath } from 'url';
+import BASE_IP from './config.js';
 
-const BASE_IP = 'http://3.39.237.226:3001';
+// const BASE_IP = 'http://3.39.237.226:3001';
 // const BASE_IP = 'localhost:3001';
 const app = express();
 const PORT = 3001;
@@ -15,7 +16,7 @@ const __dirname = path.dirname( fileURLToPath(import.meta.url) );
 
 // cors 설정
 app.use(cors({
-    origin: `${BASE_IP}`,
+    origin: `http://localhost:8080`,
     credentials: true,
 }));
 

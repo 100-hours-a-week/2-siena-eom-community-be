@@ -1,9 +1,10 @@
 import userModel from '../models/userModel.js';
+import BASE_IP from '../config.js';
 
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length >= 5;
 const validatePassword = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,20}$/.test(password);
 const validateNickname = (nickname) => nickname.length <= 10 && !/\s/.test(nickname);
-const BASE_IP = 'http://3.39.237.226:3001';
+// const BASE_IP = 'http://3.39.237.226:3001';
 // const BASE_IP = 'localhost:3001';
 
 // 회원가입 처리
