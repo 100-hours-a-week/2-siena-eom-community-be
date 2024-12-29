@@ -116,11 +116,6 @@ const login = async (req, res) => {
                 message: 'invalid_account',
                 data: null,
             });
-        // } else if (user.password !== password){
-        //     return res.status(401).json({
-        //         message: 'invalid_password',
-        //         data: null,
-        //     });
         }
 
         // 비밀번호 검증
@@ -172,35 +167,14 @@ const logout = (req, res) => {
 };
 
 // 특정 사용자 정보 조회
-const getUserById = async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const user = await userModel.getUserById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'user_not_found', data: null });
-        }
-
-        user.profile = user.profile;
-
-        res.status(200).json(user);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'internal_server_error', data: null });
-    }
-};
-
-// 특정 사용자 정보 조회
 const getUserBySession = async (req, res) => {
-    console.log('getUserBySession called');
     try {
         const userId = req.session.userId;
-        console.log('UserId from session:', userId);
         if (!userId) {
             return res.status(401).json({ message: 'unauthorized' });
         }
 
         const user = await userModel.getUserById(userId);
-        console.log('User data:', user); // 사용자 데이터 디버깅용
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
@@ -387,7 +361,6 @@ export {
     emailValid,
     nicknameValid,
     login, 
-    getUserById, 
     logout, 
     updateNickname, 
     updateProfileImage,

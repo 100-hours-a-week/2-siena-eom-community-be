@@ -1,6 +1,6 @@
 import express from 'express';
 import requireAuth from '../middleware/authMiddleware.js';
-import { getUserById, 
+import { 
         updateNickname, 
         updateProfileImage,
         nicknameValid,
@@ -29,7 +29,6 @@ router.patch('/:userId/password', requireAuth, updatePassword);
 
 // 특정 회원 정보 조회
 router.get('/userId', requireAuth, getUserBySession);
-router.get('/:userId', requireAuth, getUserById);
 
 // 회원 탈퇴
 router.delete('/:userId', requireAuth, deleteAccount);
