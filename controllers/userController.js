@@ -182,7 +182,39 @@ const getUserById = async (req, res) => {
 
         user.profile = user.profile;
 
-         res.status(200).json(user);
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'internal_server_error', data: null });
+    }
+};
+
+// 특정 사용자 정보 조회
+const getUserBySession = async (req, res) => {
+    console.log('getUserBySession called');
+    try {
+        const userId = req.session.userId;
+        console.log('UserId from session:', userId);
+        if (!userId) {
+            return res.status(401).json({ message: 'unauthorized' });
+        }
+
+        const user = await userModel.getUserById(userId);
+        console.log('User data:', user); // 사용자 데이터 디버깅용
+        if (!user) {
+            return res.status(404).json({ message: 'user_not_found', data: null });
+        }
+
+        return res.status(200).json({
+            message: 'success',
+            data: {
+                userId: user.userId,
+                email: user.email,
+                nickname: user.nickname,
+                profile: user.profile,
+            },
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'internal_server_error', data: null });
@@ -362,4 +394,5 @@ export {
     deleteAccount,
     updatePassword,
     createProfile,
+    getUserBySession,
 };

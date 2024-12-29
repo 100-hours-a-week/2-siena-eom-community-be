@@ -8,6 +8,7 @@ import { getUserById,
         logout,
         deleteAccount,
         createProfile, 
+        getUserBySession
     } from '../controllers/userController.js';
 import upload from "../middleware/multer.js";
 
@@ -27,6 +28,7 @@ router.post('/:userId/profile', upload.single('profile'), createProfile);
 router.patch('/:userId/password', requireAuth, updatePassword);
 
 // 특정 회원 정보 조회
+router.get('/userId', requireAuth, getUserBySession);
 router.get('/:userId', requireAuth, getUserById);
 
 // 회원 탈퇴
