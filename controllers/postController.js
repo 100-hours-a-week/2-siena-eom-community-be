@@ -212,6 +212,8 @@ const deletePost = async (req, res) => {
         }
 
         const posts = await postModel.getAllPosts();
+        const comments = await postModel.getAllComments();
+
         const post = posts.find(post => post.postId === postId);
         if (!post) {
             return res.status(404).json({
@@ -224,6 +226,10 @@ const deletePost = async (req, res) => {
         if (parseInt(post.author, 10) !== userId) {
             return res.status(403).json({ message: 'forbidden_action', data: null });
         }
+
+        // 해당 게시글에 달린 댓글 삭제(나머지만 저장)
+        const filteredComments = comments.filter((comment) => comment.postId !== postId);
+        await postModel.saveComments(filteredComments);
 
         // 게시글 삭제
         await postModel.deletePostById(postId);
