@@ -1,16 +1,1 @@
-[
-  {
-    "postId": 1,
-    "author": 1,
-    "title": "es6 문법으로 리팩토링 후 테스트",
-    "content": "리책토링 및 자잘한 수정이 있었습니다.",
-    "postImage": null,
-    "postDate": "2024-12-17 16:19:25",
-    "likeCount": 1,
-    "view": 2,
-    "commentsCount": 0,
-    "likes": [
-      1
-    ]
-  }
-]
+[]

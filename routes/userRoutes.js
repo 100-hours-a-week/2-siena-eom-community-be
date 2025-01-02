@@ -1,6 +1,6 @@
 import express from 'express';
 import requireAuth from '../middleware/authMiddleware.js';
-import { getUserById, 
+import { 
         updateNickname, 
         updateProfileImage,
         nicknameValid,
@@ -8,6 +8,7 @@ import { getUserById,
         logout,
         deleteAccount,
         createProfile, 
+        getUserBySession
     } from '../controllers/userController.js';
 import upload from "../middleware/multer.js";
 
@@ -27,7 +28,7 @@ router.post('/:userId/profile', upload.single('profile'), createProfile);
 router.patch('/:userId/password', requireAuth, updatePassword);
 
 // 특정 회원 정보 조회
-router.get('/:userId', requireAuth, getUserById);
+router.get('/userId', requireAuth, getUserBySession);
 
 // 회원 탈퇴
 router.delete('/:userId', requireAuth, deleteAccount);

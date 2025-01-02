@@ -1,10 +1,10 @@
 import userModel from '../models/userModel.js';
-
+import BASE_IP from '../config.js';
+import bcrypt from 'bcrypt';
+const saltRounds = 10;
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length >= 5;
 const validatePassword = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,20}$/.test(password);
 const validateNickname = (nickname) => nickname.length <= 10 && !/\s/.test(nickname);
-const BASE_IP = 'http://3.39.237.226:3001';
-// const BASE_IP = 'localhost:3001';
 
 // 회원가입 처리
 const signup = async (req, res) => {
@@ -28,11 +28,14 @@ const signup = async (req, res) => {
             return Math.max(...users.map(user => user.userId)) + 1; // 가장 큰 ID + 1
         };
 
+        // 비밀번호 암호화
+        const hashedPassword = await bcrypt.hash(password,saltRounds);
+
         // 새 유저 생성
         const newUser = {
             userId: generateUserId(users),
             email,
-            password,
+            password: hashedPassword,
             nickname,
             profile: profile && profile.trim() !== '' ? profile : `${BASE_IP}/images/default-profile.png`, // 기본값 설정
         };
@@ -113,11 +116,15 @@ const login = async (req, res) => {
                 message: 'invalid_account',
                 data: null,
             });
-        } else if (user.password !== password){
+        }
+
+        // 비밀번호 검증
+        const isPassword = await bcrypt.compare(password, user.password)
+        if(!isPassword){
             return res.status(401).json({
                 message: 'invalid_password',
                 data: null,
-            });
+            })
         }
 
         // 세션에 userId 저장
@@ -160,17 +167,28 @@ const logout = (req, res) => {
 };
 
 // 특정 사용자 정보 조회
-const getUserById = async (req, res) => {
+const getUserBySession = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.session.userId;
+        if (!userId) {
+            return res.status(401).json({ message: 'unauthorized' });
+        }
+
         const user = await userModel.getUserById(userId);
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
-        user.profile = user.profile;
+        return res.status(200).json({
+            message: 'success',
+            data: {
+                userId: user.userId,
+                email: user.email,
+                nickname: user.nickname,
+                profile: user.profile,
+            },
+        });
 
-         res.status(200).json(user);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'internal_server_error', data: null });
@@ -238,7 +256,7 @@ const updateProfileImage = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
-
+        
         user.profile = profile;
         await userModel.saveUsers(users);
 
@@ -267,12 +285,15 @@ const updatePassword = async (req, res) => {
             return res.status(404).json({ message: 'user_not_found', data: null });
         }
 
-        user.password = password;
+        // 비밀번호 암호화
+        const hashedPassword = await bcrypt.hash(password,saltRounds);
+
+        user.password = hashedPassword;
         await userModel.saveUsers(users);
 
         return res.status(201).json({
             message: 'password_changed',
-            data: { password },
+            data: { hashedPassword },
         });
     } catch (error) {
         console.error(error);
@@ -340,11 +361,11 @@ export {
     emailValid,
     nicknameValid,
     login, 
-    getUserById, 
     logout, 
     updateNickname, 
     updateProfileImage,
     deleteAccount,
     updatePassword,
     createProfile,
+    getUserBySession,
 };
