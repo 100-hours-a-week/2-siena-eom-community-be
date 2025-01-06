@@ -3,13 +3,26 @@ import userModel from '../models/userModel.js';
 import BASE_IP from '../config.js';
 
 const formatDate = () => {
-    const date = new Date();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    const ss = String(date.getSeconds()).padStart(2, '0');
+    // Intl.DateTimeFormat으로 한국 시간 적용
+    const formatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    });
+
+    // 포맷된 결과를 반환
+    const parts = formatter.formatToParts(new Date());
+    const yyyy = parts.find(part => part.type === 'year').value;
+    const mm = parts.find(part => part.type === 'month').value;
+    const dd = parts.find(part => part.type === 'day').value;
+    const hh = parts.find(part => part.type === 'hour').value;
+    const min = parts.find(part => part.type === 'minute').value;
+    const ss = parts.find(part => part.type === 'second').value;
+
     return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
 };
 
