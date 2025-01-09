@@ -2,8 +2,7 @@ import postModel from '../models/postModel.js';
 import userModel from '../models/userModel.js';
 import BASE_IP from '../config.js';
 
-const formatDate = () => {
-    // Intl.DateTimeFormat으로 한국 시간 적용
+const formatDate = (date = new Date() ) => {
     const formatter = new Intl.DateTimeFormat('ko-KR', {
         timeZone: 'Asia/Seoul',
         year: 'numeric',
@@ -14,8 +13,7 @@ const formatDate = () => {
         second: '2-digit',
     });
 
-    // 포맷된 결과를 반환
-    const parts = formatter.formatToParts(new Date());
+    const parts = formatter.formatToParts(new Date(date));
     const yyyy = parts.find(part => part.type === 'year').value;
     const mm = parts.find(part => part.type === 'month').value;
     const dd = parts.find(part => part.type === 'day').value;
@@ -30,44 +28,30 @@ const formatDate = () => {
 const postWrite = async (req, res) => {
     try {
         const userId = req.session.userId;
-        const { title, content, postImage} = req.body;
+        const { title, content, postImage } = req.body;
 
-        // 필수 필드 유효성 검사
         if (!userId || !title || !content) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-        const posts = await postModel.getAllPosts();
-
         const postDate = formatDate();
 
-        const generatePostId = (posts) => { // length + 1 대신
-            if (posts.length === 0) {
-                return 1;
-            }
-            return Math.max(...posts.map(post => post.postId)) + 1; // 가장 큰 ID + 1
-        };        
-
-        // 새 게시글 생성
         const newPost = {
-            postId: generatePostId(posts),
             author: userId,
             title,
             content,
             postImage: postImage || null,
-            postDate: postDate,
-            // like: 0,
+            postDate,
             likeCount: 0,
             view: 0,
             commentsCount: 0,
         };
 
-        posts.push(newPost);
-        await postModel.savePosts(posts);
+        const postId = await postModel.savePost(newPost);
 
         return res.status(201).json({
             message: 'post_created',
-            data: { postId: newPost.postId },
+            data: { postId },
         });
     } catch (error) {
         console.error(error);
@@ -81,27 +65,29 @@ const getPostList = async (req, res) => {
         const posts = await postModel.getAllPosts();
         const users = await userModel.getAllUsers();
 
-         // 사용자 프로필이랑 닉네임을 게시글 목록페이지에서 표시하기 위해
         const postsWithAuthor = posts.map(post => {
             const author = users.find(user => user.userId === post.author);
+
+            // postDate 포맷팅
+            if (post.postDate) {
+                const utcDate = new Date(post.postDate);
+                post.postDate = formatDate(utcDate);
+            }
+
             return {
                 ...post,
-                authorProfile: author?.profile || '../images/default-profile.png', // 프로필 이미지
-                authorNickname: author?.nickname || 'Unknown' // 닉네임
+                authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
+                authorNickname: author?.nickname || 'Unknown',
             };
         });
 
-        // 게시글 목록 반환 유저 닉네임, 프로필사진 포함
         return res.status(200).json({
             message: 'posts_loaded',
             data: postsWithAuthor,
         });
     } catch (error) {
         console.error('Error loading posts:', error);
-        return res.status(500).json({
-            message: 'internal_server_error',
-            data: null,
-        });
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
@@ -109,94 +95,73 @@ const getPostList = async (req, res) => {
 const getPostById = async (req, res) => {
     try {
         const postId = parseInt(req.params.postId, 10);
-        const posts = await postModel.getAllPosts();
-        const users = await userModel.getAllUsers();
-        const comments = await postModel.getAllComments();
-
-        const post = posts.find((p) => p.postId === postId);
+        const post = await postModel.getPostById(postId);
         if (!post) {
             return res.status(404).json({ message: 'post_not_found', data: null });
         }
+        
+        // postDate 포맷팅
+        if (post.postDate) {
+            const utcDate = new Date(post.postDate);
+            post.postDate = formatDate(utcDate);
+        }
+        
+        const users = await userModel.getAllUsers();
+        const comments = await postModel.getAllComments();
+        const likes = await postModel.getLikesByPostId(postId);
 
-        // 게시글 작성자의 닉네임 및 프로필 추가
-        const author = users.find((user) => user.userId === post.author);
+        const author = users.find(user => user.userId === post.author);
+        const commentsWithAuth = comments
+            .filter(comment => comment.postId === postId)
+            .map(comment => {
+                const commentAuthor = users.find(user => user.userId === comment.commentAuthor);
+                return {
+                    ...comment,
+                    authorProfile: commentAuthor?.profile || `${BASE_IP}/images/default-profile.png`,
+                    authorNickname: commentAuthor?.nickname || 'Unknown',
+                };
+            });
 
-        // 댓글 데이터 필터링 (postId 기준)
-        const postComments = comments.filter((comment) => parseInt(comment.postId, 10) === postId);
-
-        // 댓글에 작성자 정보 추가
-        const commentsWithAuth = postComments.map((comment) => {
-            const author = users.find((user) => String(user.userId) === String(comment.commentAuthor));
-            return {
-                ...comment,
-                commentContent: comment.content, // 원래 댓글 내용 유지
+        return res.status(200).json({
+            message: 'post_loaded',
+            data: {
+                ...post,
                 authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
                 authorNickname: author?.nickname || 'Unknown',
-            };
+                likes,
+                likeCount: post.likeCount,
+                commentsCount: post.commentsCount || 0, // 기본값 추가
+                comments: commentsWithAuth,
+            },
         });
-
-        // 게시글 데이터에 댓글 추가
-        const postWithAuthComm = {
-            ...post,
-            authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
-            authorNickname: author?.nickname || 'Unknown',
-            comments: commentsWithAuth, // 처리된 댓글 데이터 추가
-        };
-
-         res.status(200).json({ message: 'post_loaded', data: postWithAuthComm });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'internal_server_error', data: null });
+        console.error('Error loading post:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
-
-// 게시글 조회수 증가
-const increaseView = async (req, res) => {
-    try {
-        const postId = parseInt(req.params.postId, 10);
-        const posts = await postModel.getAllPosts();
-        const post = posts.find((p) => p.postId === postId);
-        if(!post) {
-            return res.status(404).json({message: 'post_not_found', data: null})
-        }
-
-        post.view = (post.view || 0) + 1;
-        await postModel.savePosts(posts);
-
-        res.status(200).json({ message: 'increase_view_count', data:null})
-    } catch(error){
-        res.status(500).json({ message: 'internal_server_error', data: null})
-    }
-}
 
 // 게시글 수정 처리
 const updatePost = async (req, res) => {
     try {
         const userId = req.session.userId;
         const postId = parseInt(req.params.postId, 10);
-
         const { title, content, postImage } = req.body;
 
-        if (!title || !content) {
-            return res.status(400).json({ message: 'invalid_request', data: null });
-        }
-
-        const posts = await postModel.getAllPosts();
-        const post = posts.find((p) => p.postId === postId);
+        const post = await postModel.getPostById(postId);
         if (!post) {
             return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
-        // 작성자랑 수정하려는 사용자가 같은지 확인
         if (post.author !== userId) {
             return res.status(403).json({ message: 'forbidden_action', data: null });
         }
 
-        post.title = title;
-        post.content = content;
-        post.postImage = postImage || post.postImage;
-
-        await postModel.savePosts(posts);
+        await postModel.savePost({
+            ...post,
+            title,
+            content,
+            postImage: postImage || post.postImage,
+        });
 
         return res.status(200).json({
             message: 'post_updated',
@@ -214,46 +179,27 @@ const updatePost = async (req, res) => {
 // 게시글 삭제
 const deletePost = async (req, res) => {
     try {
-        const userId = parseInt(req.session.userId, 10);
+        const userId = req.session.userId;
         const postId = parseInt(req.params.postId, 10);
 
-        if (isNaN(postId)) { // postId가 숫자가 아닌 타입으로 잘못전달되는 경우
-            return res.status(400).json({
-                message: 'invalid_request',
-                data: null,
-            });
-        }
-
-        const posts = await postModel.getAllPosts();
-        const comments = await postModel.getAllComments();
-
-        const post = posts.find(post => post.postId === postId);
+        const post = await postModel.getPostById(postId);
         if (!post) {
-            return res.status(404).json({
-                message: 'post_not_found',
-                data: null,
-            });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
-        // 작성자랑 삭제하려는 사용자가 같은지 확인
-        if (parseInt(post.author, 10) !== userId) {
+        if (post.author !== userId) {
             return res.status(403).json({ message: 'forbidden_action', data: null });
         }
 
-        // 해당 게시글에 달린 댓글 삭제(나머지만 저장)
-        const filteredComments = comments.filter((comment) => comment.postId !== postId);
-        await postModel.saveComments(filteredComments);
-
-        // 게시글 삭제
         await postModel.deletePostById(postId);
 
-        res.status(200).json({
+        return res.status(200).json({
             message: 'post_deleted',
             data: null,
         });
     } catch (error) {
-        console.error('Error deleting post:', error.message);
-        res.status(500).json({
+        console.error(error);
+        return res.status(500).json({
             message: 'internal_server_error',
             data: null,
         });
@@ -265,63 +211,27 @@ const commentWrite = async (req, res) => {
     try {
         const userId = req.session.userId;
         const postId = parseInt(req.params.postId, 10);
-
         const { content } = req.body;
         if (!content) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-        const posts = await postModel.getAllPosts();
-        const users = await userModel.getAllUsers();
-        const comments = await postModel.getAllComments();
-
-        const post = posts.find(post => post.postId === postId);
+        const post = await postModel.getPostById(postId);
         if (!post) {
             return res.status(404).json({ message: 'post_not_found', data: null });
         }
-        const user = users.find((user) => user.userId === userId);
-        if (!user) {
-            return res.status(404).json({ message: 'user_not_found', data: null });
-        }
 
         const commentDate = formatDate();
-
-        const generateCommentId = (comments) => {
-            if (comments.length === 0) {
-                return 1;
-            }
-            return Math.max(...comments.map(comment => comment.commentId)) + 1; // 가장 큰 ID + 1
-        };
-        
-        // 새 댓글 생성
-        const newComment = {
-            postId: postId,
-            commentId: generateCommentId(comments),
+        const commentId = await postModel.saveComment({
+            postId,
             commentAuthor: userId,
             content,
-            commentDate: commentDate,
-        };
-
-        comments.push(newComment);
-        post.commentsCount = (post.commentsCount || 0) + 1; // 댓글 수 증가
-        await postModel.saveComments(comments); // 댓글 업데이트
-        await postModel.savePosts(posts); // 게시글 업데이트 (댓글 수 반영)
-
-        // 댓글 작성자 정보 추가 (작성자의 닉네임과 프로필을 띄워야함)
-        const commentsWithAuth = comments.map(comment => {
-            const author = users.find(user => user.userId === comment.commentAuthor);
-            return {
-                ...comment,
-                authorProfile: author?.profile || '../images/default-profile.png', // 프로필 이미지
-                authorNickname: author?.nickname || 'Unknown' // 닉네임
-            };
+            commentDate,
         });
 
         return res.status(201).json({
             message: 'comment_created',
-            data: { commentId: newComment.commentId,
-                commentsWithAuth,
-             },
+            data: { commentId },
         });
     } catch (error) {
         console.error(error);
@@ -329,217 +239,201 @@ const commentWrite = async (req, res) => {
     }
 };
 
-// 댓글 수정 처리
+// 댓글 수정
 const updateComment = async (req, res) => {
     try {
         const userId = req.session.userId;
-        const postId = parseInt(req.params.postId, 10);
         const commentId = parseInt(req.params.commentId, 10);
+        const postId = parseInt(req.params.postId,10);
 
         const { content } = req.body;
         if (!content) {
             return res.status(400).json({ message: 'invalid_request', data: null });
         }
 
-        const posts = await postModel.getAllPosts();
-        const post = posts.find((p) => p.postId === postId);
-        const comments = await postModel.getAllComments();
-        const comment = comments.find((p) => p.commentId === commentId);
-
-        if (!post) {
-            return res.status(404).json({ message: 'post_not_found', data: null });
-        }
+        const comment = await postModel.getCommentById(postId, commentId);
         if (!comment) {
             return res.status(404).json({ message: 'comment_not_found', data: null });
         }
 
-        // 댓글 작성자랑 수정하려는 사용자가 같은지 확인
-        if (String(comment.commentAuthor) !== String(userId)) {
+        // 댓글 작성자 확인
+        if (comment.commentAuthor !== userId) {
             return res.status(403).json({ message: 'forbidden_action', data: null });
-        }        
+        }
 
-        comment.content = content;
-        await postModel.saveComments(comments);
+        const updatedComment = {
+            ...comment,
+            content,
+            commentDate: formatDate(), // 수정 시간 업데이트
+        };
+
+        await postModel.saveComment(updatedComment);
 
         return res.status(200).json({
             message: 'comment_updated',
             data: null,
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            message: 'internal_server_error',
-            data: null,
-        });
-    }
-};
-
-//특정 댓글 조회
-const getCommentById = async (req, res) => {
-    const { postId, commentId } = req.params;
-
-    try {
-        const comment = await postModel.getCommentById(postId, commentId);
-        if (!comment) {
-            return res.status(404).json({ message: "comment_not_found", data: null });
-        }
-
-        res.status(200).json({ message: "comment_loaded", data: comment });
-    } catch (error) {
-        res.status(500).json({ message: "internal_server_error", data: null });
+        console.error('Error updating comment:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
 // 댓글 삭제
 const deleteComment = async (req, res) => {
     try {
-        const postId = Number(req.params.postId, 10);
+        const userId = req.session.userId;
         const commentId = parseInt(req.params.commentId, 10);
+        const postId = parseInt(req.params.postId,10);
 
-        if (isNaN(postId) || isNaN(commentId)) {
-            console.error("invalid_postId_or_commentId");
-            return res.status(400).json({
-                message: 'invalid_request',
-                data: null,
-            });
-        }
-
-        const posts = await postModel.getAllPosts();
-        const comments = await postModel.getAllComments();
-
-        const post = posts.find((p) => p.postId === postId);
         const comment = await postModel.getCommentById(postId, commentId);
-        if (!post) {
-            return res.status(404).json({ message: 'post_not_found', data: null });
-        }
         if (!comment) {
-            return res.status(404).json({
-                message: 'comment_not_found',
-                data: null,
-            });
+            return res.status(404).json({ message: 'comment_not_found', data: null });
         }
 
-        const filteredComments = comments.filter((c) => c.commentId !== commentId);
-        // 삭제할 댓글 제외하고 나머지로 새로운 comments 저장
-
-        const userId = parseInt(req.session.userId, 10);
-        if (parseInt(comment.commentAuthor, 10) !== userId) {
-            return res.status(403).json({
-                message: 'forbidden_action',
-                data: null,
-            });
+        if (comment.commentAuthor !== userId) {
+            return res.status(403).json({ message: 'forbidden_action', data: null });
         }
 
         await postModel.deleteCommentById(commentId);
-
-        post.commentsCount = Math.max((post.commentsCount || 0) - 1, 0); 
-        // 댓글 수 감소, 최소값 0 설정
-
-        await postModel.saveComments(filteredComments);
-        await postModel.savePosts(posts);
+        await postModel.decrementCommentsCount(comment.postId); // 댓글 수 감소
 
         return res.status(200).json({
             message: 'comment_deleted',
             data: null,
         });
     } catch (error) {
-        return res.status(500).json({
-            message: 'internal_server_error',
-            data: null,
-        });
+        console.error('Error deleting comment:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
+
+// 댓글 조회
+const getCommentById = async (req, res) => {
+    try {
+        const { postId, commentId } = req.params;
+
+        const comment = await postModel.getCommentById(postId, commentId);
+        if (!comment) {
+            return res.status(404).json({ message: 'comment_not_found', data: null });
+        }
+
+        // commentDate 포맷팅
+        if (comment.commentDate) {
+            const utcDate = new Date(comment.commentDate);
+            comment.commentDate = formatDate(utcDate);
+        }
+
+        return res.status(200).json({ message: 'comment_loaded', data: comment });
+    } catch (error) {
+        console.error('Error loading comment:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
+    }
+};
+
 
 // 좋아요 추가
 const addLike = async (req, res) => {
     try {
+        const userId = req.session.userId;
         const postId = parseInt(req.params.postId, 10);
-        const userId = parseInt(req.params.userId, 10);
-        if (isNaN(postId) || isNaN(userId)) {
-            return res.status(400).json({ message: "invalid_request", data: null });
-        }
 
-        const posts = await postModel.getAllPosts();
-        const post = posts.find((p) => p.postId === postId);
+        const post = await postModel.getPostById(postId);
         if (!post) {
-            return res.status(404).json({ message: "post_not_found", data: null });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
-        post.likes = post.likes || []; // 초기 likes 배열
-    
-        // 이미 좋아요를 누른 경우
-        if (post.likes.includes(userId)) {
-            return res.status(409).json({ message: "like_already_exists", data: null });
+        const likeExists = await postModel.checkLike(postId, userId);
+        if (likeExists) {
+            return res.status(409).json({ message: 'like_already_exists', data: null });
         }
 
-        post.likes.push(userId); // likes 배열에 좋아요를 누른 userId 추가
-        post.likeCount = post.likes.length; // 좋아요 수 업데이트
+        await postModel.addLike(postId, userId);
 
-        await postModel.savePosts(posts);
-        res.status(201).json({ message: "like_added", data: { likes: post.likes, likeCount: post.likeCount } });
+        const updatePost = await postModel.getPostById(postId);
+
+        return res.status(201).json({
+            message: 'like_added',
+            data: updatePost.likeCount,
+        });
     } catch (error) {
-        console.error("Error adding like:", error);
-        res.status(500).json({ message: "internal_server_error", data: null });
+        console.error('Error adding like:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
 // 좋아요 삭제
 const removeLike = async (req, res) => {
     try {
+        const userId = req.session.userId;
         const postId = parseInt(req.params.postId, 10);
-        const userId = parseInt(req.params.userId, 10);
-        if (isNaN(postId) || isNaN(userId)) {
-            return res.status(400).json({ message: "invalid_request", data: null });
-        }
 
-        const posts = await postModel.getAllPosts();
-        const post = posts.find((p) => p.postId === postId);
+        const post = await postModel.getPostById(postId);
         if (!post) {
-            return res.status(404).json({ message: "post_not_found", data: null });
+            return res.status(404).json({ message: 'post_not_found', data: null });
         }
 
-        post.likes = post.likes || []; // 초기 likes 배열
-
-        const index = post.likes.indexOf(userId); // likes배열에 userId 존재하는 지 확인
-
-        if (index === -1) { // likes 배열에 userId 없음
-            return res.status(404).json({ message: "like_not_found", data: null });
+        const likeExists = await postModel.checkLike(postId, userId);
+        if (!likeExists) {
+            return res.status(404).json({ message: 'like_not_found', data: null });
         }
 
-        post.likes.splice(index, 1); // likes 배열에서 userId 제거
-        post.likeCount = post.likes.length; // 좋아요 수 업데이트
+        await postModel.removeLike(postId, userId);
 
-        await postModel.savePosts(posts);
-        res.status(200).json({ message: "like_canceled", data: { likes: post.likes, likeCount: post.likeCount } });
+        const updatePost = await postModel.getPostById(postId);
+
+        return res.status(200).json({
+            message: 'like_removed',
+            data: updatePost.likeCount,
+        });
     } catch (error) {
-        console.error("Error removing like:", error);
-        res.status(500).json({ message: "internal_server_error", data: null });
+        console.error('Error removing like:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
-// 게시글 사진 업로드
+// 게시글 이미지 업로드
 const createPostImg = async (req, res) => {
     try {
         const file = req.file;
         if (!file) {
-            return res.status(400).json({
-                message: 'invalid_file',
-                data: null,
-            });
+            return res.status(400).json({ message: 'invalid_file', data: null });
         }
 
         const filePath = `/uploads/${file.filename}`;
         return res.status(201).json({
             message: 'Image_upload_success',
-            data: { filePath: `${BASE_IP}${filePath}` }, // 절대경로로저장
+            data: { filePath: `${BASE_IP}${filePath}` }, // 절대 경로 반환
         });
     } catch (error) {
-        console.error(error);
+        console.error('Error uploading image:', error);
         return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
-// 댓글 목록 조회
+// 게시글 조회수 증가
+const increaseView = async (req, res) => {
+    try {
+        const postId = parseInt(req.params.postId, 10);
+
+        const post = await postModel.getPostById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'post_not_found', data: null });
+        }
+
+        await postModel.incrementViewCount(postId);
+
+        return res.status(200).json({
+            message: 'view_count_increased',
+            data: null,
+        });
+    } catch (error) {
+        console.error('Error increasing view count:', error);
+        return res.status(500).json({ message: 'internal_server_error', data: null });
+    }
+};
+
+// 특정 게시글의 댓글 조회
 const getCommentsByPostId = async (req, res) => {
     try {
         const postId = parseInt(req.params.postId, 10);
@@ -547,38 +441,36 @@ const getCommentsByPostId = async (req, res) => {
             return res.status(400).json({ message: 'invalid_post_id', data: null });
         }
 
-        const comments = await postModel.getAllComments();
+        const comments = await postModel.getCommentsByPostId(postId);
         const users = await userModel.getAllUsers();
 
-        // 해당 게시글의 댓글 필터링
-        const filteredComments = comments.filter(
-            (comment) => parseInt(comment.postId, 10) === postId
-        );
+        const commentsWithAuth = comments.map(comment => {
+            const author = users.find(user => user.userId === comment.commentAuthor);
+            
+            // commentDate 포맷팅
+            if (comment.commentDate) {
+                const utcDate = new Date(comment.commentDate);
+                comment.commentDate = formatDate(utcDate);
+            }
 
-        // 댓글에 작성자의 닉네임과 프로필 추가
-        const commentsWithAuth = filteredComments.map((comment) => {
-            const author = users.find((user) => String(user.userId) === String(comment.commentAuthor));
             return {
                 ...comment,
                 authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
                 authorNickname: author?.nickname || 'Unknown',
             };
         });
-
+        console.log('Formatted comments:', commentsWithAuth); // 디버깅용
         return res.status(200).json({
             message: 'comments_loaded',
             data: commentsWithAuth,
         });
     } catch (error) {
         console.error('Error loading comments:', error);
-        return res.status(500).json({
-            message: 'internal_server_error',
-            data: null,
-        });
+        return res.status(500).json({ message: 'internal_server_error', data: null });
     }
 };
 
-export { 
+export {
     postWrite,
     getPostList,
     getPostById,
