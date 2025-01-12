@@ -7,9 +7,9 @@ import cors from 'cors';
 import path from'path';
 import { fileURLToPath } from 'url';
 import BASE_IP from './config.js';
+import dotenv from 'dotenv';
 
-// const BASE_IP = 'http://3.39.237.226:3001';
-// const BASE_IP = 'localhost:3001';
+dotenv.config();
 
 const app = express();
 const PORT = 3001;
@@ -24,7 +24,7 @@ app.use(cors({
 // 세션 설정
 app.use(
     session({
-        secret: 'siena_secretKey',
+        secret: process.env.SECRET_KEY,
         resave: false,
         saveUninitialized: false,
         cookie: {
@@ -41,7 +41,6 @@ app.use((req, res, next) => {
     next();
 });
 
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 app.use(express.json());
@@ -49,7 +48,6 @@ app.use(express.json());
 app.use('/guest', guestRoutes);
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
-
 app.use('/images', express.static(path.join(__dirname, '../2-siena-eom-community-fe-1/images')));
 
 // 서버 실행

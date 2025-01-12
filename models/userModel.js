@@ -1,59 +1,73 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname( fileURLToPath(import.meta.url) );
-const filePath = path.join(__dirname, '../data/users.json');
-
-// 모든 사용자 데이터 가져오기
-const getAllUsers = async () => {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data || '[]');
-};
-
-// 사용자 데이터 저장
-const saveUsers = async (users) => {
-    await fs.writeFile(filePath, JSON.stringify(users, null, 2), 'utf-8');
-};
-
-// 사용자 삭제
-const deleteUserById = async (userId) => {
-    try {
-        const users = await getAllUsers();
-
-        // `userId`와 일치하는 사용자 필터링하여 제거
-        const filteredUsers = users.filter(user => user.userId !== parseInt(userId, 10));
-        if (filteredUsers.length === users.length) {
-            throw new Error(`userId: ${userId} not found`);
-        }
-
-        // 변경된 userId.json 저장
-        await saveUsers(filteredUsers);
-        console.log(`userId ${userId} has been deleted.`);
-    } catch (error) {
-        console.error(`Error deleting user: ${error.message}`);
-        throw error;
-    }
-};
-
-// 특정 사용자 정보 조회
-const getUserById = async (userId) => {
-    try {
-        const data = await fs.readFile(filePath, 'utf-8');
-        const users = JSON.parse(data);
-        
-        const user = users.find(user => user.userId === parseInt(userId, 10));
-        return user || null;
-    } catch (error) {
-        console.error(`Error reading user data: ${error.message}`);
-        throw new Error('Unable to read user data');
-    }
-};
+import pool from '../db.js';
 
 const userModel = {
-    getAllUsers,
-    saveUsers,
-    getUserById,
-    deleteUserById
-}
+    // 모든 사용자 데이터 가져오기
+    async getAllUsers() {
+        const [rows] = await pool.query('SELECT * FROM user');
+        return rows;
+    },
+
+    // 사용자 저장 (업데이트 또는 삽입)
+    async saveUser(user) {
+        const { userId, email, password, nickname, profile } = user;
+        if (userId) {
+            // 업데이트
+            await pool.query(
+                'UPDATE user SET email = ?, password = ?, nickname = ?, profile = ? WHERE userId = ?',
+                [email, password, nickname, profile, userId]
+            );
+        } else {
+            // 삽입
+            await pool.query(
+                'INSERT INTO user (email, password, nickname, profile) VALUES (?, ?, ?, ?)',
+                [email, password, nickname, profile]
+            );
+        }
+    },
+
+    // 특정 사용자 정보 조회
+    async getUserById(userId) {
+        const [[user]] = await pool.query('SELECT * FROM user WHERE userId = ?', [userId]);
+        return user || null;
+    },
+
+    // 사용자 삭제
+    async deleteUserById(userId) {
+        await pool.query('DELETE FROM user WHERE userId = ?', [userId]);
+    },
+
+    // 특정 이메일로 사용자 조회
+    async getUserByEmail(email) {
+        const [[user]] = await pool.query('SELECT * FROM user WHERE email = ?', [email]);
+        return user || null;
+    },
+
+    // 이메일 중복 확인
+    async checkEmail(email) {
+        const [[result]] = await pool.query('SELECT COUNT(*) as count FROM user WHERE email = ?', [email]);
+        return result.count > 0;
+    },
+
+    // 닉네임 중복 확인
+    async checkNickname(nickname) {
+        const [[result]] = await pool.query('SELECT COUNT(*) as count FROM user WHERE nickname = ?', [nickname]);
+        return result.count > 0;
+    },
+
+    // 닉네임 업데이트
+    async updateNickname(userId, nickname) {
+        await pool.query('UPDATE user SET nickname = ? WHERE userId = ?', [nickname, userId]);
+    },
+
+    // 프로필 이미지 업데이트
+    async updateProfile(userId, profile) {
+        await pool.query('UPDATE user SET profile = ? WHERE userId = ?', [profile, userId]);
+    },
+
+    // 비밀번호 업데이트
+    async updatePassword(userId, hashedPassword) {
+        await pool.query('UPDATE user SET password = ? WHERE userId = ?', [hashedPassword, userId]);
+    },
+};
+
 export default userModel;
