@@ -115,6 +115,11 @@ const getPostById = async (req, res) => {
             .filter(comment => comment.postId === postId)
             .map(comment => {
                 const commentAuthor = users.find(user => user.userId === comment.commentAuthor);
+                // commentDate 포맷팅
+                if (comment.commentDate) {
+                    const utcDate = new Date(comment.commentDate);
+                    comment.commentDate = formatDate(utcDate);
+                }
                 return {
                     ...comment,
                     authorProfile: commentAuthor?.profile || `${BASE_IP}/images/default-profile.png`,
@@ -442,6 +447,8 @@ const getCommentsByPostId = async (req, res) => {
         }
 
         const comments = await postModel.getCommentsByPostId(postId);
+        console.log('Comments from DB:', comments);
+
         const users = await userModel.getAllUsers();
 
         const commentsWithAuth = comments.map(comment => {
@@ -464,6 +471,7 @@ const getCommentsByPostId = async (req, res) => {
             message: 'comments_loaded',
             data: commentsWithAuth,
         });
+        
     } catch (error) {
         console.error('Error loading comments:', error);
         return res.status(500).json({ message: 'internal_server_error', data: null });
