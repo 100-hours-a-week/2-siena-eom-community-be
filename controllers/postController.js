@@ -234,6 +234,9 @@ const commentWrite = async (req, res) => {
             commentDate,
         });
 
+        // 댓글 수 증가
+        await postModel.incrementCommentsCount(postId);
+
         return res.status(201).json({
             message: 'comment_created',
             data: { commentId },
