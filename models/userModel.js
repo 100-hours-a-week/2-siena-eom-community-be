@@ -32,8 +32,29 @@ const userModel = {
     },
 
     // 사용자 삭제
+    // async deleteUserById(userId) {
+    //     await pool.query('DELETE FROM user WHERE userId = ?', [userId]);
+    // },
+    
+    // 사용자 삭제
     async deleteUserById(userId) {
-        await pool.query('DELETE FROM user WHERE userId = ?', [userId]);
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // 게시글 작성자 정보를 NULL로 설정
+            await connection.query('UPDATE post SET author = NULL WHERE author = ?', [userId]);
+
+            // 사용자 삭제
+            await connection.query('DELETE FROM user WHERE userId = ?', [userId]);
+
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     },
 
     // 특정 이메일로 사용자 조회
