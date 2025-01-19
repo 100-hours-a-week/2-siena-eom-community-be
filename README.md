@@ -2,8 +2,11 @@
 
 ## 💬 WeMessage
 
+이 프로젝트의 백엔드는 `Node.js`와 `Express` 기반으로 구축되었으며 사용자 인증(세션), 게시물 및 댓글 관리 기능 등을 제공합니다. `MariaDB`를 사용하며 `mysql2` 라이브러리를 통해 연결됩니다. 비밀번호 암호화에는 `bcrypt`, 이미지 업로드에는 `multer` 라이브러리를 사용합니다.
+
 ### 🗓️ 개발 기간 
 2024.11 ~
+
 
 ### 📚 기술 스택
 <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"><img src="https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=Node.js&logoColor=white"><img src="https://img.shields.io/badge/express-000000?style=for-the-badge&logo=express&logoColor=white"><img src="https://img.shields.io/badge/mariaDB-003545?style=for-the-badge&logo=mariaDB&logoColor=white">
