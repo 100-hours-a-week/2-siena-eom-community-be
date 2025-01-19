@@ -42,6 +42,9 @@ const userModel = {
         try {
             await connection.beginTransaction();
 
+            // likes 테이블에서 해당 사용자의 데이터 삭제
+            await connection.query('DELETE FROM likes WHERE userId = ?', [userId]);
+
             // 게시글 작성자 정보를 NULL로 설정
             await connection.query('UPDATE post SET author = NULL WHERE author = ?', [userId]);
 
