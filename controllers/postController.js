@@ -1,6 +1,7 @@
 import postModel from '../models/postModel.js';
 import userModel from '../models/userModel.js';
-import BASE_IP from '../config.js';
+//import BASE_IP from '../config.js';
+const BASE_IP = process.env.BASE_IP;
 
 const formatDate = (date = new Date() ) => {
     const formatter = new Intl.DateTimeFormat('ko-KR', {

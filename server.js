@@ -6,7 +6,6 @@ import postRoutes from './routes/postRoutes.js';
 import cors from 'cors';
 import path from'path';
 import { fileURLToPath } from 'url';
-import BASE_IP from './config.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -17,7 +16,7 @@ const __dirname = path.dirname( fileURLToPath(import.meta.url) );
 
 // cors 설정
 app.use(cors({
-    origin: `http://localhost:8080`,
+    origin: process.env.origin_IP,
     credentials: true,
 }));
 
