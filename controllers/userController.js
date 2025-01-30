@@ -1,6 +1,7 @@
 import userModel from '../models/userModel.js';
-import BASE_IP from '../config.js';
+//import BASE_IP from '../config.js';
 import bcrypt from 'bcrypt';
+const BASE_IP = process.env.BASE_IP;
 
 const saltRounds = 10;
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length >= 5;

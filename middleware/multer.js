@@ -21,8 +21,6 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-        // const uniqueName = `${Date.now()}-${file.originalname}`;
-        // cb(null, uniqueName);
         const safeFileName = file.originalname
             .replace(/\s+/g, '-') // 공백을 '-'로 변환
             .replace(/[^a-zA-Z0-9.\-_]/g, ''); // URL-safe 문자만 허용
