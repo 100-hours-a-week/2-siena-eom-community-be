@@ -32,6 +32,11 @@ const userModel = {
     },
 
     // 사용자 삭제
+    // async deleteUserById(userId) {
+    //     await pool.query('DELETE FROM user WHERE userId = ?', [userId]);
+    // },
+    
+    // 사용자 삭제
     async deleteUserById(userId) {
         const connection = await pool.getConnection();
         try {
@@ -41,8 +46,8 @@ const userModel = {
             await connection.query('DELETE FROM likes WHERE userId = ?', [userId]);
             // 게시글 작성자 정보를 NULL로 설정
             await connection.query('UPDATE post SET author = NULL WHERE author = ?', [userId]);
-	    await connection.query('UPDATE comment SET commentAuthor = NULL WHERE commentAuthor = ?', [userId]);
-
+	          await connection.query('UPDATE comment SET commentAuthor = NULL WHERE commentAuthor = ?', [userId]);
+          
             // 사용자 삭제
             await connection.query('DELETE FROM user WHERE userId = ?', [userId]);
 
