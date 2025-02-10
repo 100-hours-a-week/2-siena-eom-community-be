@@ -266,18 +266,17 @@ const deleteAccount = async (req, res) => {
 // 프로필사진 업로드
 const createProfile = async (req, res) => {
     try {
-        const file = req.file;
-        if (!file) {
+
+        if (!req.file) {
             return res.status(400).json({
                 message: 'invalid_file',
                 data: null,
             });
         }
 
-        const filePath = `/uploads/${file.filename}`;
         return res.status(201).json({
             message: 'profile_upload_success',
-            data: { filePath: `${BASE_IP}${filePath}` },
+            data: { filePath: req.file.location },
         });
     } catch (error) {
         console.error('Error uploading profile image:', error);
