@@ -1,6 +1,5 @@
 import postModel from '../models/postModel.js';
 import userModel from '../models/userModel.js';
-//import BASE_IP from '../config.js';
 const BASE_IP = process.env.BASE_IP;
 
 const formatDate = (date = new Date() ) => {
@@ -132,6 +131,7 @@ const getPostById = async (req, res) => {
             message: 'post_loaded',
             data: {
                 ...post,
+                postImage: post.postImage,
                 authorProfile: author?.profile || `${BASE_IP}/images/default-profile.png`,
                 authorNickname: author?.nickname || 'Unknown',
                 likes,
@@ -404,21 +404,21 @@ const removeLike = async (req, res) => {
 // 게시글 이미지 업로드
 const createPostImg = async (req, res) => {
     try {
-        const file = req.file;
-        if (!file) {
-            return res.status(400).json({ message: 'invalid_file', data: null });
-        }
 
-        const filePath = `/uploads/${file.filename}`;
-        return res.status(201).json({
-            message: 'Image_upload_success',
-            data: { filePath: `${BASE_IP}${filePath}` }, // 절대 경로 반환
-        });
+        if (req.file) {
+            return res.status(201).json({
+                message: "Image_upload_success",
+                data: { filePath: req.file.location }, // S3 URL 반환
+            });
+        } else {
+            return res.status(400).json({ message: "Image_upload_failed" });
+        }
     } catch (error) {
-        console.error('Error uploading image:', error);
-        return res.status(500).json({ message: 'internal_server_error', data: null });
+        console.error("이미지 업로드 중 오류 발생:", error);
+        return res.status(500).json({ message: "internal_server_error" });
     }
 };
+
 
 // 게시글 조회수 증가
 const increaseView = async (req, res) => {
