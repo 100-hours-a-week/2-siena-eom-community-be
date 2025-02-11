@@ -15,7 +15,7 @@ import { postWrite,
     increaseView,
     getCommentsByPostId,
 } from '../controllers/postController.js';
-import upload from '../middleware/multer.js';
+import { upload } from '../middleware/multer.js';
 
 const router = express.Router();
 

@@ -1,3 +1,4 @@
+import { generateCloudFrontUrl } from '../middleware/multer.js';
 import userModel from '../models/userModel.js';
 //import BASE_IP from '../config.js';
 import bcrypt from 'bcrypt';
@@ -274,9 +275,12 @@ const createProfile = async (req, res) => {
             });
         }
 
+        const cloudFrontUrl = generateCloudFrontUrl(req.file.key);
+        console.log(cloudFrontUrl)
+
         return res.status(201).json({
             message: 'profile_upload_success',
-            data: { filePath: req.file.location },
+            data: { filePath: cloudFrontUrl }, // CloudFront URL 반환
         });
     } catch (error) {
         console.error('Error uploading profile image:', error);

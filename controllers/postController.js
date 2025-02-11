@@ -1,5 +1,6 @@
 import postModel from '../models/postModel.js';
 import userModel from '../models/userModel.js';
+import { generateCloudFrontUrl } from '../middleware/multer.js';
 const BASE_IP = process.env.BASE_IP;
 
 const formatDate = (date = new Date() ) => {
@@ -105,7 +106,7 @@ const getPostById = async (req, res) => {
             const utcDate = new Date(post.postDate);
             post.postDate = formatDate(utcDate);
         }
-        
+
         const users = await userModel.getAllUsers();
         const comments = await postModel.getAllComments();
         const likes = await postModel.getLikesByPostId(postId);
@@ -126,7 +127,7 @@ const getPostById = async (req, res) => {
                     authorNickname: commentAuthor?.nickname || 'Unknown',
                 };
             });
-
+            
         return res.status(200).json({
             message: 'post_loaded',
             data: {
@@ -406,9 +407,11 @@ const createPostImg = async (req, res) => {
     try {
 
         if (req.file) {
+            const cloudFrontUrl = generateCloudFrontUrl(req.file.key);
+            console.log('cdn url:',cloudFrontUrl);
             return res.status(201).json({
                 message: "Image_upload_success",
-                data: { filePath: req.file.location }, // S3 URL 반환
+                data: { filePath: cloudFrontUrl }, // cloudfront URL 반환
             });
         } else {
             return res.status(400).json({ message: "Image_upload_failed" });
