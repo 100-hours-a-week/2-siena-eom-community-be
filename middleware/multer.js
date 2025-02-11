@@ -1,37 +1,39 @@
 import multer from "multer";
-import path from "path";
-import { fileURLToPath } from 'url';
+import multerS3 from 'multer-s3';
+import { S3Client } from '@aws-sdk/client-s3';
 
-const __dirname = path.dirname( fileURLToPath(import.meta.url) );
-
-import fs from "fs";
-
-// uploads 폴더 존재 여부 확인 및 생성 함수
-const createUploadsFolder = (folderPath) => {
-    if (!fs.existsSync(folderPath)) {
-        console.log(`"${folderPath}" 폴더가 존재하지 않아 새로 생성합니다.`);
-        fs.mkdirSync(folderPath, { recursive: true });
-    }
-};
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, "../uploads");
-        createUploadsFolder(uploadPath);
-        cb(null, uploadPath);
+// S3 클라이언트 설정
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
-    filename: (req, file, cb) => {
-        const safeFileName = file.originalname
-            .replace(/\s+/g, '-') // 공백을 '-'로 변환
-            .replace(/[^a-zA-Z0-9.\-_]/g, ''); // URL-safe 문자만 허용
-        cb(null, Date.now() + '-' + safeFileName); // 고유 파일 이름 생성
+});
+
+const storage = multerS3({
+    s3: s3,
+    bucket: process.env.S3_BUCKET_NAME,
+    metadata: (req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+        try {
+            const safeFileName = file.originalname
+                .replace(/\s+/g, "-")
+                .replace(/[^a-zA-Z0-9.\-_]/g, "");
+            const uniqueFileName = `${Date.now()}-${safeFileName}`;
+            cb(null, `uploads/${uniqueFileName}`);
+        } catch (error) {
+            console.error("key 함수 오류:", error);
+            cb(error);
+        }
     },
 });
 
 const upload = multer({
     storage: storage,
     fileFilter: (req, file, cb) => {
-        console.log("파일 타입:", file.mimetype);
         const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
         if (!allowedTypes.includes(file.mimetype)) {
             console.log("허용되지 않은 파일 타입입니다:", file.mimetype);
@@ -42,4 +44,13 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-export default upload;
+const generateCloudFrontUrl = (key) => {
+    const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
+    if (!cloudFrontDomain) {
+        console.error("CLOUDFRONT_DOMAIN 이 설정되지 않았습니다.");
+        return null;
+    }
+    return `${cloudFrontDomain}/${key}`;
+};
+
+export { upload, generateCloudFrontUrl, };

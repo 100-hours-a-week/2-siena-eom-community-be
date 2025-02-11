@@ -1,3 +1,4 @@
+import { generateCloudFrontUrl } from '../middleware/multer.js';
 import userModel from '../models/userModel.js';
 //import BASE_IP from '../config.js';
 import bcrypt from 'bcrypt';
@@ -266,18 +267,20 @@ const deleteAccount = async (req, res) => {
 // 프로필사진 업로드
 const createProfile = async (req, res) => {
     try {
-        const file = req.file;
-        if (!file) {
+
+        if (!req.file) {
             return res.status(400).json({
                 message: 'invalid_file',
                 data: null,
             });
         }
 
-        const filePath = `/uploads/${file.filename}`;
+        const cloudFrontUrl = generateCloudFrontUrl(req.file.key);
+        console.log(cloudFrontUrl)
+
         return res.status(201).json({
             message: 'profile_upload_success',
-            data: { filePath: `${BASE_IP}${filePath}` },
+            data: { filePath: cloudFrontUrl }, // CloudFront URL 반환
         });
     } catch (error) {
         console.error('Error uploading profile image:', error);

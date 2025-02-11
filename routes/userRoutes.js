@@ -10,7 +10,8 @@ import {
         createProfile, 
         getUserBySession
     } from '../controllers/userController.js';
-import upload from "../middleware/multer.js";
+import { upload } from '../middleware/multer.js';
+
 
 const router = express.Router();
 
